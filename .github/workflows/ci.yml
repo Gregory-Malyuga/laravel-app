@@ -14,7 +14,6 @@ permissions:
   security-events: write  # for SARIF upload
 
 env:
-  IMAGE: ghcr.io/${{ github.repository }}
   BASE_IMAGE: ghcr.io/gregory-malyuga/bootstrap-docker-php:latest
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -276,8 +275,16 @@ jobs:
       - test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+    outputs:
+      image: ${{ steps.image-name.outputs.value }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Compute lowercase image name
+        id: image-name
+        run: |
+          echo "value=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+          echo "IMAGE=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - uses: docker/setup-buildx-action@v3
 
@@ -310,13 +317,14 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     env:
+      IMAGE: ${{ needs.build.outputs.image }}
       TRIVY_USERNAME: ${{ github.actor }}
       TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Scan (report)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.IMAGE }}:${{ github.sha }}
+          image-ref: ${{ needs.build.outputs.image }}:${{ github.sha }}
           exit-code: '0'
           format: sarif
           output: trivy-image.sarif
@@ -330,7 +338,7 @@ jobs:
       - name: Fail on fixable CRITICAL
         uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ${{ env.IMAGE }}:${{ github.sha }}
+          image-ref: ${{ needs.build.outputs.image }}:${{ github.sha }}
           exit-code: '1'
           severity: CRITICAL
           ignore-unfixed: true
@@ -342,6 +350,8 @@ jobs:
     name: Smoke Test
     needs: build
     runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ needs.build.outputs.image }}
     steps:
       - uses: docker/login-action@v3
         with:
@@ -357,7 +367,7 @@ jobs:
             -e DB_CONNECTION=sqlite -e DB_DATABASE=":memory:" \
             -e CACHE_STORE=array -e QUEUE_CONNECTION=sync -e SESSION_DRIVER=array \
             -e ELASTICSEARCH_URL=http://localhost:9200 \
-            ${{ env.IMAGE }}:${{ github.sha }} \
+            ${{ needs.build.outputs.image }}:${{ github.sha }} \
             php artisan about --ansi
 
       - name: route:list
@@ -368,7 +378,7 @@ jobs:
             -e DB_CONNECTION=sqlite -e DB_DATABASE=":memory:" \
             -e CACHE_STORE=array -e QUEUE_CONNECTION=sync -e SESSION_DRIVER=array \
             -e ELASTICSEARCH_URL=http://localhost:9200 \
-            ${{ env.IMAGE }}:${{ github.sha }} \
+            ${{ needs.build.outputs.image }}:${{ github.sha }} \
             php artisan route:list --ansi
 
       - name: optimize (config/route/view cache)
@@ -379,7 +389,7 @@ jobs:
             -e DB_CONNECTION=sqlite -e DB_DATABASE=":memory:" \
             -e CACHE_STORE=array -e QUEUE_CONNECTION=sync -e SESSION_DRIVER=array \
             -e ELASTICSEARCH_URL=http://localhost:9200 \
-            ${{ env.IMAGE }}:${{ github.sha }} \
+            ${{ needs.build.outputs.image }}:${{ github.sha }} \
             php artisan optimize --ansi
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -387,7 +397,7 @@ jobs:
 # ─────────────────────────────────────────────────────────────────────────────
   release-latest:
     name: Release / latest
-    needs: [security-image, smoke]
+    needs: [build, security-image, smoke]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
@@ -397,13 +407,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          docker pull ${{ env.IMAGE }}:${{ github.sha }}
-          docker tag  ${{ env.IMAGE }}:${{ github.sha }} ${{ env.IMAGE }}:latest
-          docker push ${{ env.IMAGE }}:latest
+          IMAGE=${{ needs.build.outputs.image }}
+          docker pull $IMAGE:${{ github.sha }}
+          docker tag  $IMAGE:${{ github.sha }} $IMAGE:latest
+          docker push $IMAGE:latest
 
   release-semver:
     name: Release / semver tag
-    needs: [security-image, smoke]
+    needs: [build, security-image, smoke]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
@@ -413,6 +424,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - run: |
-          docker pull ${{ env.IMAGE }}:${{ github.sha }}
-          docker tag  ${{ env.IMAGE }}:${{ github.sha }} ${{ env.IMAGE }}:${{ github.ref_name }}
-          docker push ${{ env.IMAGE }}:${{ github.ref_name }}
+          IMAGE=${{ needs.build.outputs.image }}
+          docker pull $IMAGE:${{ github.sha }}
+          docker tag  $IMAGE:${{ github.sha }} $IMAGE:${{ github.ref_name }}
+          docker push $IMAGE:${{ github.ref_name }}

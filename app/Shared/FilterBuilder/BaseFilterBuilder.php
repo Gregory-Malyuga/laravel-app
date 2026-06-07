@@ -22,7 +22,7 @@ class BaseFilterBuilder
         Data $filters,
         array $filterMap = [],
     ): Builder {
-        $properties = (new ReflectionClass($filters))->getProperties(ReflectionProperty::IS_PUBLIC);
+        $properties = new ReflectionClass($filters)->getProperties(ReflectionProperty::IS_PUBLIC);
 
         foreach ($properties as $property) {
             $key = $property->getName();
