@@ -23,9 +23,6 @@ use OpenApi\Attributes as OA;
     summary: 'List Users',
     security: [['bearerAuth' => []]],
     parameters: [
-        new OA\Parameter(name: 'name', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
-        new OA\Parameter(name: 'email', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
-        new OA\Parameter(name: 'role', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
         new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 1)),
         new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', default: 15)),
     ],
@@ -42,7 +39,6 @@ use OpenApi\Attributes as OA;
             )
         ),
         new OA\Response(response: 401, description: 'Unauthenticated'),
-        new OA\Response(response: 403, description: 'Forbidden'),
     ],
 )]
 #[OA\Get(
@@ -56,7 +52,6 @@ use OpenApi\Attributes as OA;
     responses: [
         new OA\Response(response: 200, description: 'Success', content: new OA\JsonContent(ref: '#/components/schemas/User')),
         new OA\Response(response: 401, description: 'Unauthenticated'),
-        new OA\Response(response: 403, description: 'Forbidden'),
         new OA\Response(response: 404, description: 'Not found'),
     ],
 )]

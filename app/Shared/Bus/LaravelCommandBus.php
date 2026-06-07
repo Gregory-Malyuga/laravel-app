@@ -5,9 +5,9 @@ namespace Shared\Bus;
 use Illuminate\Contracts\Container\Container;
 use RuntimeException;
 
-class LaravelCommandBus implements CommandBusInterface
+readonly class LaravelCommandBus implements CommandBusInterface
 {
-    public function __construct(private readonly Container $container) {}
+    public function __construct(private Container $container) {}
 
     public function dispatch(BaseCommand $command): mixed
     {

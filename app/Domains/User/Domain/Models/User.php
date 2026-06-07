@@ -28,7 +28,6 @@ use Laravel\Sanctum\PersonalAccessToken;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
- *
  * @method static \Domains\User\Domain\Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
@@ -42,7 +41,6 @@ use Laravel\Sanctum\PersonalAccessToken;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRole($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
- *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
