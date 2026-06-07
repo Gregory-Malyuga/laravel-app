@@ -69,6 +69,10 @@ class MakeDomainCommand extends Command
 
     private function formatGenerated(string $name, string $domainPath): void
     {
+        if (app()->environment('testing')) {
+            return;
+        }
+
         $pint = base_path('vendor/bin/pint');
         if (! $this->files->exists($pint)) {
             return;

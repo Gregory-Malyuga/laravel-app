@@ -12,6 +12,7 @@ trait InteractsWithRepository
 {
     /**
      * @template T
+     *
      * @param  LengthAwarePaginator<int, T>  $paginator
      */
     protected function assertPaginatorTotal(int $expected, LengthAwarePaginator $paginator): void
@@ -21,6 +22,7 @@ trait InteractsWithRepository
 
     /**
      * @template T
+     *
      * @param  LengthAwarePaginator<int, T>  $paginator
      */
     protected function assertPaginatorPerPage(int $expected, LengthAwarePaginator $paginator): void
@@ -30,6 +32,7 @@ trait InteractsWithRepository
 
     /**
      * @template T
+     *
      * @param  LengthAwarePaginator<int, T>  $paginator
      */
     protected function assertPaginatorCount(int $expected, LengthAwarePaginator $paginator): void

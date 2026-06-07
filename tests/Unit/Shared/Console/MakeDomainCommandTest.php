@@ -31,9 +31,22 @@ class MakeDomainCommandTest extends TestCase
         $this->featureTestBase = base_path('app/Domains/StubGen/Tests/Feature');
         $this->originalProviders = $this->files->get(base_path('bootstrap/providers.php'));
         $this->originalApiRoutes = $this->files->get(base_path('routes/api.php'));
+
+        // Guard against leftover state from a previously interrupted test run.
+        $this->cleanupStubGenArtifacts();
     }
 
     protected function tearDown(): void
+    {
+        $this->cleanupStubGenArtifacts();
+
+        $this->files->put(base_path('bootstrap/providers.php'), $this->originalProviders);
+        $this->files->put(base_path('routes/api.php'), $this->originalApiRoutes);
+
+        parent::tearDown();
+    }
+
+    private function cleanupStubGenArtifacts(): void
     {
         $this->files->deleteDirectory($this->domainBase);
 
@@ -45,11 +58,6 @@ class MakeDomainCommandTest extends TestCase
             DB::table('migrations')->where('migration', 'like', '%create_stub_gens_table')->delete();
         }
         Schema::dropIfExists('stub_gens');
-
-        $this->files->put(base_path('bootstrap/providers.php'), $this->originalProviders);
-        $this->files->put(base_path('routes/api.php'), $this->originalApiRoutes);
-
-        parent::tearDown();
     }
 
     public function test_creates_standard_domain_structure(): void

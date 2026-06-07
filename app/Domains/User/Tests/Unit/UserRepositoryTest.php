@@ -2,8 +2,8 @@
 
 namespace Domains\User\Tests\Unit;
 
-use Domains\User\Domain\UserFilterData;
 use Domains\User\Domain\Models\User;
+use Domains\User\Domain\UserFilterData;
 use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchIndexer;
 use Domains\User\Infrastructure\Repositories\UserRepository;
 use Shared\Repository\BaseRepository;

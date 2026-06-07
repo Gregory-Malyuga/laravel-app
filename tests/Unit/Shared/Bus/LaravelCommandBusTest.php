@@ -3,11 +3,11 @@
 namespace Tests\Unit\Shared\Bus;
 
 use Illuminate\Container\Container;
+use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Shared\Bus\BaseCommand;
 use Shared\Bus\HandlerInterface;
 use Shared\Bus\LaravelCommandBus;
-use Tests\TestCase;
 
 class LaravelCommandBusTest extends TestCase
 {
@@ -17,7 +17,6 @@ class LaravelCommandBusTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
         $this->container = new Container;
         $this->bus = new LaravelCommandBus($this->container);
     }

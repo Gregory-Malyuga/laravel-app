@@ -3,11 +3,11 @@
 namespace Tests\Unit\Shared\Bus;
 
 use Illuminate\Container\Container;
+use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Shared\Bus\BaseQuery;
 use Shared\Bus\HandlerInterface;
 use Shared\Bus\LaravelQueryBus;
-use Tests\TestCase;
 
 class LaravelQueryBusTest extends TestCase
 {
@@ -17,7 +17,6 @@ class LaravelQueryBusTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
         $this->container = new Container;
         $this->bus = new LaravelQueryBus($this->container);
     }

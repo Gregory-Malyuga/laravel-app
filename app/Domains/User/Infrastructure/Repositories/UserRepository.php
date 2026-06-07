@@ -2,10 +2,11 @@
 
 namespace Domains\User\Infrastructure\Repositories;
 
-use Domains\User\Domain\UserFilterData;
 use Domains\User\Domain\Models\User;
+use Domains\User\Domain\UserFilterData;
 use Shared\Elasticsearch\ElasticsearchSearchable;
 use Shared\Elasticsearch\InteractsWithElasticsearch;
+use Shared\Filters\FilterInterface;
 use Shared\Filters\NoOpFilter;
 use Shared\Repository\BaseRepository;
 use Spatie\LaravelData\Data;
@@ -16,7 +17,7 @@ class UserRepository extends BaseRepository implements ElasticsearchSearchable
 
     protected string $model = User::class;
 
-    /** @var array<string, class-string<\Shared\Filters\FilterInterface>> */
+    /** @var array<string, class-string<FilterInterface>> */
     protected array $filterMap = [
         'email' => NoOpFilter::class,
     ];
