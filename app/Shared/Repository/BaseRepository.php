@@ -35,7 +35,7 @@ abstract class BaseRepository
     /** @var list<string> */
     protected array $defaultSelect = ['*'];
 
-    /** @var array<string|int, mixed> */
+    /** @var array<string> */
     protected array $defaultWith = [];
 
     // ── Custom filter map (set in domain) ─────────────────────────────────────

@@ -43,7 +43,9 @@ trait HasApiTests
     {
         $model = $this->existingRecord();
 
-        $response = $this->getJson("{$this->basePath()}/{$model->getKey()}");
+        /** @var int|string $key */
+        $key = $model->getKey();
+        $response = $this->getJson($this->basePath().'/'.(string) $key);
 
         $response->assertStatus(200);
     }
@@ -66,7 +68,9 @@ trait HasApiTests
     {
         $model = $this->existingRecord();
 
-        $response = $this->putJson("{$this->basePath()}/{$model->getKey()}", $this->makeUpdatePayload());
+        /** @var int|string $key */
+        $key = $model->getKey();
+        $response = $this->putJson($this->basePath().'/'.(string) $key, $this->makeUpdatePayload());
 
         $response->assertStatus(200);
     }
@@ -75,7 +79,9 @@ trait HasApiTests
     {
         $model = $this->existingRecord();
 
-        $response = $this->deleteJson("{$this->basePath()}/{$model->getKey()}");
+        /** @var int|string $key */
+        $key = $model->getKey();
+        $response = $this->deleteJson($this->basePath().'/'.(string) $key);
 
         $response->assertStatus(204);
     }
@@ -85,6 +91,8 @@ trait HasApiTests
         $response = $this->getJson($this->basePath());
 
         $response->assertStatus(200);
-        $this->assertApiPaginatedShape($response->json());
+        /** @var array<string, mixed> $body */
+        $body = $response->json();
+        $this->assertApiPaginatedShape($body);
     }
 }

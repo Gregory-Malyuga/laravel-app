@@ -47,7 +47,9 @@ class UserApiTest extends BaseApiTest
         $response = $this->getJson('/api/v1/users?per_page=2&page=1');
 
         $response->assertStatus(200);
-        $this->assertCount(2, $response->json('data'));
+        /** @var list<array<string, mixed>> $data */
+        $data = $response->json('data');
+        $this->assertCount(2, $data);
         $this->assertEquals(1, $response->json('meta.current_page'));
     }
 
@@ -58,6 +60,7 @@ class UserApiTest extends BaseApiTest
         $response = $this->getJson('/api/v1/users?sort=id&direction=asc');
 
         $response->assertStatus(200);
+        /** @var list<array<string, mixed>> $data */
         $data = $response->json('data');
         $this->assertNotEmpty($data);
         $this->assertLessThanOrEqual($data[1]['id'] ?? PHP_INT_MAX, $data[0]['id']);
@@ -70,6 +73,7 @@ class UserApiTest extends BaseApiTest
         $response = $this->getJson('/api/v1/users?sort=id&direction=desc');
 
         $response->assertStatus(200);
+        /** @var list<array<string, mixed>> $data */
         $data = $response->json('data');
         $this->assertNotEmpty($data);
         $this->assertGreaterThanOrEqual($data[1]['id'] ?? 0, $data[0]['id']);
@@ -83,6 +87,8 @@ class UserApiTest extends BaseApiTest
         $response = $this->getJson('/api/v1/users?name='.urlencode('Alice Admin'));
 
         $response->assertStatus(200);
-        $this->assertCount(1, $response->json('data'));
+        /** @var list<array<string, mixed>> $data */
+        $data = $response->json('data');
+        $this->assertCount(1, $data);
     }
 }

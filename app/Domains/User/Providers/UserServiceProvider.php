@@ -7,6 +7,12 @@ use Domains\User\Application\Commands\Delete\DeleteUserHandler;
 use Domains\User\Application\Commands\Update\UpdateUserHandler;
 use Domains\User\Application\Queries\FindById\FindUserByIdHandler;
 use Domains\User\Application\Queries\ListAll\ListUsersHandler;
+use Domains\User\Domain\Events\UserCreated;
+use Domains\User\Domain\Events\UserDeleted;
+use Domains\User\Domain\Events\UserUpdated;
+use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchIndexer;
+use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchSyncListener;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class UserServiceProvider extends ServiceProvider
@@ -18,7 +24,15 @@ class UserServiceProvider extends ServiceProvider
         $this->app->bind(DeleteUserHandler::class);
         $this->app->bind(ListUsersHandler::class);
         $this->app->bind(FindUserByIdHandler::class);
+
+        $this->app->bind(UserElasticsearchIndexer::class);
+        $this->app->tag([UserElasticsearchIndexer::class], ['es-indexers']);
     }
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+        Event::listen(UserCreated::class, [UserElasticsearchSyncListener::class, 'handleCreated']);
+        Event::listen(UserUpdated::class, [UserElasticsearchSyncListener::class, 'handleUpdated']);
+        Event::listen(UserDeleted::class, [UserElasticsearchSyncListener::class, 'handleDeleted']);
+    }
 }

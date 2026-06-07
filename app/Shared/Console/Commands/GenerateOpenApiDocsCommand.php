@@ -74,6 +74,7 @@ class GenerateOpenApiDocsCommand extends Command
         }
 
         foreach ($this->files->directories($path) as $sub) {
+            /** @var string $sub */
             $this->collectDomains($sub, $result);
         }
     }

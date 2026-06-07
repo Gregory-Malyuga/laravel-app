@@ -35,11 +35,13 @@ trait HasRepositoryTests
     public function test_find_returns_model(): void
     {
         $model = $this->createRecord();
+        /** @var int|string $key */
+        $key = $model->getKey();
 
-        $result = $this->repository()->find($model->getKey());
+        $result = $this->repository()->find($key);
 
         $this->assertNotNull($result);
-        $this->assertSame($model->getKey(), $result->getKey());
+        $this->assertSame($key, $result->getKey());
     }
 
     public function test_find_returns_null_for_missing(): void
@@ -50,8 +52,10 @@ trait HasRepositoryTests
     public function test_find_or_fail_returns_model(): void
     {
         $model = $this->createRecord();
+        /** @var int|string $key */
+        $key = $model->getKey();
 
-        $result = $this->repository()->findOrFail($model->getKey());
+        $result = $this->repository()->findOrFail($key);
 
         $this->assertSame($model->getKey(), $result->getKey());
     }
@@ -69,7 +73,9 @@ trait HasRepositoryTests
 
         $this->assertInstanceOf(Model::class, $model);
         $this->assertNotNull($model->getKey());
-        $this->assertNotNull($this->repository()->find($model->getKey()));
+        /** @var int|string $key */
+        $key = $model->getKey();
+        $this->assertNotNull($this->repository()->find($key));
     }
 
     public function test_update_modifies_model(): void
@@ -87,6 +93,7 @@ trait HasRepositoryTests
     public function test_delete_removes_model(): void
     {
         $model = $this->createRecord();
+        /** @var int|string $key */
         $key = $model->getKey();
 
         $this->repository()->delete($model);

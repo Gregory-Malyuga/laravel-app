@@ -20,7 +20,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => fake()->password(8),
-            'role' => fake()->randomElement(UserRole::cases())->value,
+            'role' => fake()->randomElement(array_column(UserRole::cases(), 'value')),
         ];
     }
 }

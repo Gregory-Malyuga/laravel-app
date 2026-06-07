@@ -50,9 +50,10 @@ trait InteractsWithElasticsearch
             'body' => $this->buildEsQuery($filters),
         ]);
 
-        /** @var array<array<string, mixed>> $hits */
-        $hits = (array) $response['hits']['hits'];
-        $total = (int) ($response['hits']['total']['value'] ?? count($hits));
+        /** @var array{hits: array{total: array{value: int}, hits: list<array{_id: string}>}} $data */
+        $data = $response->asArray();
+        $hits = $data['hits']['hits'];
+        $total = $data['hits']['total']['value'];
         $ids = array_column($hits, '_id');
 
         if ($total > count($ids)) {

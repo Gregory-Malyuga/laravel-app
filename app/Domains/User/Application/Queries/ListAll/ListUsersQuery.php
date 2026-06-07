@@ -2,7 +2,7 @@
 
 namespace Domains\User\Application\Queries\ListAll;
 
-use Domains\User\Application\Data\UserFilterData;
+use Domains\User\Domain\UserFilterData;
 use Illuminate\Http\Request;
 use Shared\Bus\BaseQuery;
 use Shared\Data\PaginationData;

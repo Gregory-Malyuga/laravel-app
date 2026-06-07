@@ -15,8 +15,8 @@ class PaginationData extends Data
     public static function fromRequest(Request $request): self
     {
         return new self(
-            page: (int) $request->input('page', 1),
-            perPage: (int) $request->input('per_page', 15),
+            page: $request->integer('page', 1),
+            perPage: $request->integer('per_page', 15),
         );
     }
 }

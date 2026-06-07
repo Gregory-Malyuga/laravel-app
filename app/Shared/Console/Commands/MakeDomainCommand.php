@@ -84,7 +84,8 @@ class MakeDomainCommand extends Command
             return;
         }
 
-        $cmd = $pint.' '.implode(' ', array_map('escapeshellarg', $all)).' 2>/dev/null';
+        /** @var list<string> $all */
+        $cmd = $pint.' '.implode(' ', array_map(fn (string $f): string => escapeshellarg($f), $all)).' 2>/dev/null';
         exec($cmd);
 
         $this->line('  <info>Formatted:</info> generated files with Pint');

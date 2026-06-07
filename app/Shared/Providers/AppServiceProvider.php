@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(Client::class, function () {
             return ClientBuilder::create()
-                ->setHosts([(string) config('services.elasticsearch.url', 'http://localhost:9200')])
+                ->setHosts([config('services.elasticsearch.url', 'http://localhost:9200')])
                 ->build();
         });
 

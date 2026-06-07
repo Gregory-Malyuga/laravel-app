@@ -2,14 +2,30 @@
 
 namespace Domains\User\Tests\Unit;
 
-use Domains\User\Application\Data\UserFilterData;
+use Domains\User\Domain\UserFilterData;
 use Domains\User\Domain\Models\User;
+use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchIndexer;
 use Domains\User\Infrastructure\Repositories\UserRepository;
 use Shared\Repository\BaseRepository;
 use Shared\Testing\BaseRepositoryTest;
+use Shared\Testing\Traits\RefreshElasticsearch;
 
 class UserRepositoryTest extends BaseRepositoryTest
 {
+    use RefreshElasticsearch;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpElasticsearchIndex('users');
+    }
+
+    protected function tearDown(): void
+    {
+        $this->tearDownElasticsearchIndex('users');
+        parent::tearDown();
+    }
+
     protected function repository(): BaseRepository
     {
         return new UserRepository;
@@ -60,8 +76,14 @@ class UserRepositoryTest extends BaseRepositoryTest
 
     public function test_list_filters_by_email(): void
     {
-        $this->repository()->create(['name' => 'Alice', 'email' => 'alice@example.com', 'password' => 'pass1234', 'role' => 'user']);
+        $alice = $this->repository()->create(['name' => 'Alice', 'email' => 'alice@example.com', 'password' => 'pass1234', 'role' => 'user']);
         $this->repository()->create(['name' => 'Bob', 'email' => 'bob@example.com', 'password' => 'pass1234', 'role' => 'user']);
+
+        /** @var int $aliceId */
+        $aliceId = $alice->getKey();
+        $indexer = app(UserElasticsearchIndexer::class);
+        $indexer->indexByIds([$aliceId]);
+        $indexer->refreshIndex();
 
         $filters = new UserFilterData(email: 'alice@example.com');
         $result = $this->repository()->list($filters);

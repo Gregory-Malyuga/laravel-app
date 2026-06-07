@@ -52,8 +52,9 @@ class ElasticsearchReindexCommand extends Command
 
         // Create new index with mapping
         $this->client->indices()->delete(['index' => $newIndex, 'ignore_unavailable' => true]);
+        /** @var array<string, mixed> $body */
         $body = $this->files->exists($mappingFile)
-            ? json_decode($this->files->get($mappingFile), true)
+            ? (array) json_decode($this->files->get($mappingFile), true)
             : [];
         $this->client->indices()->create(['index' => $newIndex, 'body' => $body]);
         $this->line("  <comment>Created:</comment> {$newIndex}");

@@ -32,6 +32,7 @@ class ElasticsearchSetupCommand extends Command
         }
 
         foreach ($mappingFiles as $file) {
+            /** @var string $file */
             $index = basename($file, '.json');
             $this->setupIndex($index, $file);
         }
@@ -41,7 +42,8 @@ class ElasticsearchSetupCommand extends Command
 
     private function setupIndex(string $index, string $mappingFile): void
     {
-        $body = json_decode($this->files->get($mappingFile), true);
+        /** @var array<string, mixed> $body */
+        $body = (array) json_decode($this->files->get($mappingFile), true);
 
         /** @var EsResponse $existsResponse */
         $existsResponse = $this->client->indices()->exists(['index' => $index]);

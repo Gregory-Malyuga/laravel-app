@@ -54,7 +54,7 @@ services:
       <<: *php-depends
     volumes:
       - ./:/var/www/app
-      - php_vendor:/var/www/app/vendor
+      - ./vendor:/var/www/app/vendor
     networks:
       - backend
 
@@ -70,7 +70,7 @@ services:
       disable: true
     volumes:
       - ./:/var/www/app
-      - php_vendor:/var/www/app/vendor
+      - ./vendor:/var/www/app/vendor
     networks:
       - backend
     restart: unless-stopped
@@ -87,7 +87,7 @@ services:
       disable: true
     volumes:
       - ./:/var/www/app
-      - php_vendor:/var/www/app/vendor
+      - ./vendor:/var/www/app/vendor
     networks:
       - backend
     restart: unless-stopped
@@ -147,7 +147,6 @@ networks:
   backend:
 
 volumes:
-  php_vendor:
   postgres_data:
   redis_data:
   elasticsearch_data:

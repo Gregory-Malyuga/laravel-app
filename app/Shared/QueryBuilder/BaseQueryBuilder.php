@@ -36,7 +36,7 @@ class BaseQueryBuilder
     }
 
     /**
-     * @param  array<string|int, mixed>  $relations
+     * @param  array<string>  $relations
      */
     public function with(array $relations): static
     {

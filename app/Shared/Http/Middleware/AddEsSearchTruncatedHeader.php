@@ -11,6 +11,7 @@ class AddEsSearchTruncatedHeader
 {
     public function handle(Request $request, Closure $next): Response
     {
+        /** @var Response $response */
         $response = $next($request);
 
         $bag = app(EsTruncationBag::class);
