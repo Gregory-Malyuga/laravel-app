@@ -15,6 +15,7 @@ permissions:
 
 env:
   BASE_IMAGE: ghcr.io/gregory-malyuga/bootstrap-docker-php:latest
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PREPARE
