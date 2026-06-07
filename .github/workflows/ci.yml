@@ -246,6 +246,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with: { name: vendor, path: vendor/ }
 
+      - run: chmod +x vendor/bin/*
+
       - run: php artisan config:clear
       - run: php artisan migrate --force
       - run: php vendor/bin/paratest --processes=4 --runner=WrapperRunner --log-junit=report.xml
