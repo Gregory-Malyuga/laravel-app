@@ -11,8 +11,8 @@ use Illuminate\Foundation\Testing\TestCase;
  */
 trait HasApiTests
 {
-    use MakesApiAssertions;
     use DatabaseTransactions;
+    use MakesApiAssertions;
 
     abstract protected function basePath(): string;
 
