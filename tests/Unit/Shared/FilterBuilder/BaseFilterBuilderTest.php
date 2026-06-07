@@ -4,7 +4,7 @@ namespace Tests\Unit\Shared\FilterBuilder;
 
 use Domains\User\Domain\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Shared\FilterBuilder\BaseFilterBuilder;
 use Shared\Filters\FilterInterface;
 use Spatie\LaravelData\Data;
@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 class BaseFilterBuilderTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     public function test_null_values_are_skipped(): void
     {

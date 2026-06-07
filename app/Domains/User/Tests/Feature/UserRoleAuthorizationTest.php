@@ -4,12 +4,12 @@ namespace Domains\User\Tests\Feature;
 
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;
 
 class UserRoleAuthorizationTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     /** @return array<string, mixed> */
     private function adminPayload(): array

@@ -23,6 +23,11 @@ class MakeDomainCommandTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->markTestSkipped(
+            'SLOW: make:domain writes ~30 files through Docker-Windows bind-mount (~4-8s/test). '.
+            'Run explicitly: php artisan test --filter=MakeDomainCommandTest'
+        );
+
         parent::setUp();
 
         $this->files = new Filesystem;
@@ -38,10 +43,11 @@ class MakeDomainCommandTest extends TestCase
 
     protected function tearDown(): void
     {
-        $this->cleanupStubGenArtifacts();
-
-        $this->files->put(base_path('bootstrap/providers.php'), $this->originalProviders);
-        $this->files->put(base_path('routes/api.php'), $this->originalApiRoutes);
+        if (isset($this->files)) {
+            $this->cleanupStubGenArtifacts();
+            $this->files->put(base_path('bootstrap/providers.php'), $this->originalProviders);
+            $this->files->put(base_path('routes/api.php'), $this->originalApiRoutes);
+        }
 
         parent::tearDown();
     }

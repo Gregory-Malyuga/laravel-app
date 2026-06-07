@@ -14,7 +14,9 @@ class UserElasticsearchIndexer implements ElasticsearchIndexerInterface
 
     public function getIndexName(): string
     {
-        return 'users';
+        $token = getenv('TEST_TOKEN');
+
+        return ($token !== false && $token !== '') ? "users_{$token}" : 'users';
     }
 
     public function index(int $chunkSize): int

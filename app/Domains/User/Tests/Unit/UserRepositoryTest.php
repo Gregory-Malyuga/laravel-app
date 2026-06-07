@@ -17,13 +17,18 @@ class UserRepositoryTest extends BaseRepositoryTest
     protected function setUp(): void
     {
         parent::setUp();
-        $this->setUpElasticsearchIndex('users');
+        $this->setUpElasticsearchIndex($this->esIndex());
     }
 
     protected function tearDown(): void
     {
-        $this->tearDownElasticsearchIndex('users');
+        $this->tearDownElasticsearchIndex($this->esIndex());
         parent::tearDown();
+    }
+
+    private function esIndex(): string
+    {
+        return app(UserElasticsearchIndexer::class)->getIndexName();
     }
 
     protected function repository(): BaseRepository

@@ -4,9 +4,6 @@ namespace Tests\Unit\Shared\Http\Data;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Shared\Http\Data\BaseData;
-use Spatie\LaravelData\Attributes\Validation\Max;
-use Spatie\LaravelData\Attributes\Validation\Required;
 use Tests\TestCase;
 
 class BaseDataTest extends TestCase
@@ -65,13 +62,4 @@ class BaseDataTest extends TestCase
 
         $this->assertSame(201, $response->getStatusCode());
     }
-}
-
-class StubData extends BaseData
-{
-    public function __construct(
-        #[Required, Max(255)]
-        public readonly string $name,
-        public readonly int $value,
-    ) {}
 }

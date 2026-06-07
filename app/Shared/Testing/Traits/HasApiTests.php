@@ -3,7 +3,7 @@
 namespace Shared\Testing\Traits;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;
 
 /**
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\TestCase;
 trait HasApiTests
 {
     use MakesApiAssertions;
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     abstract protected function basePath(): string;
 

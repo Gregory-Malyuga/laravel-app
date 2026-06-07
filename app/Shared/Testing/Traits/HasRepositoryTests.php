@@ -4,7 +4,7 @@ namespace Shared\Testing\Traits;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\TestCase;
 use Shared\Data\PaginationData;
 use Shared\Repository\BaseRepository;
@@ -15,9 +15,9 @@ use Spatie\LaravelData\Data;
  */
 trait HasRepositoryTests
 {
+    use DatabaseTransactions;
     use InteractsWithPagination;
     use InteractsWithRepository;
-    use RefreshDatabase;
 
     abstract protected function repository(): BaseRepository;
 

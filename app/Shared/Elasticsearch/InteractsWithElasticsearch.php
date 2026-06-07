@@ -42,7 +42,9 @@ trait InteractsWithElasticsearch
         /** @var Client $client */
         $client = app(Client::class);
 
-        $index = (new $this->model)->getTable();
+        $table = (new $this->model)->getTable();
+        $token = getenv('TEST_TOKEN');
+        $index = ($token !== false && $token !== '') ? "{$table}_{$token}" : $table;
 
         /** @var EsResponse $response */
         $response = $client->search([

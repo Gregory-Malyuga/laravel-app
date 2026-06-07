@@ -4,7 +4,7 @@ namespace Tests\Unit\Shared\QueryBuilder;
 
 use Domains\User\Domain\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Shared\Data\PaginationData;
 use Shared\Data\SortData;
 use Shared\QueryBuilder\BaseQueryBuilder;
@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class BaseQueryBuilderPostprocessorTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private function createUsers(int $count): void
     {

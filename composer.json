@@ -19,6 +19,7 @@
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.7",
+        "brianium/paratest": "^7.20",
         "deptrac/deptrac": "^2.0",
         "ergebnis/composer-normalize": "^2.51",
         "fakerphp/faker": "^1.23",
@@ -81,7 +82,7 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
-        "architecture": "./vendor/bin/deptrac analyse --config-file=deptrac.yaml --fail-on-uncovered",
+        "architecture": "./vendor/bin/deptrac analyse --config-file=deptrac.yaml --fail-on-uncovered --cache-file=.deptrac.cache",
         "codegen": "@php artisan make:domain",
         "codegen:openapi": "@php artisan openapi:generate",
         "composer:normalize": "composer normalize --dry-run --diff",
@@ -118,6 +119,13 @@
             "@docs:check",
             "@test"
         ],
+        "pre-push:fast": [
+            "@lint:php",
+            "@cs:check",
+            "@phpstan",
+            "@docs:check",
+            "@test"
+        ],
         "psalm": "@phpstan",
         "router:prod": "@php artisan route:cache --ansi",
         "setup": [
@@ -132,7 +140,13 @@
         "smoke": "@php artisan about --ansi",
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
+            "@php artisan migrate --force --ansi",
             "@php artisan test"
+        ],
+        "test:parallel": [
+            "@php artisan config:clear --ansi @no_additional_args",
+            "@php artisan migrate --force --ansi",
+            "@php vendor/bin/paratest --processes=4 --runner=WrapperRunner"
         ]
     },
     "$schema": "https://getcomposer.org/schema.json"

@@ -5,7 +5,7 @@ namespace Tests\Unit\Shared\Repository;
 use Domains\User\Domain\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Shared\Data\PaginationData;
 use Shared\Data\SortData;
 use Shared\QueryBuilder\BaseQueryBuilder;
@@ -16,7 +16,7 @@ use TypeError;
 
 class BaseRepositoryTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private BaseRepository $repo;
 

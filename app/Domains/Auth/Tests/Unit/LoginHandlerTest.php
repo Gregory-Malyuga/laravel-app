@@ -8,13 +8,13 @@ use Domains\Auth\Domain\Exceptions\InvalidCredentialsException;
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Models\User;
 use Domains\User\Infrastructure\Repositories\UserRepository;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Hash;
 
 class LoginHandlerTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     public function test_returns_user_for_valid_credentials(): void
     {
