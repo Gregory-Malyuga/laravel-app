@@ -3,7 +3,6 @@
 use Domains\Auth\Http\Controllers\LoginController;
 use Domains\Auth\Http\Controllers\LogoutController;
 use Domains\Auth\Http\Controllers\RegisterController;
-use Domains\StubGen\Presentation\Http\Controllers\StubGenController;
 use Domains\User\Presentation\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
