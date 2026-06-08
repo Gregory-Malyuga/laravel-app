@@ -6,10 +6,7 @@ use Domains\User\Application\Data\UserFilterData;
 use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Exceptions\UserNotFoundException;
 use Domains\User\Domain\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
-use Shared\Data\PaginationData;
-use Shared\Data\SortData;
 use Shared\Elasticsearch\ElasticsearchSearchable;
 use Shared\Elasticsearch\InteractsWithElasticsearch;
 use Shared\Filters\FilterInterface;
@@ -40,17 +37,6 @@ class UserRepository extends BaseRepository implements ElasticsearchSearchable, 
     {
         /** @var User */
         return parent::findOrFail($id);
-    }
-
-    /**
-     * @return LengthAwarePaginator<int, User>
-     *
-     * @phpstan-ignore method.childReturnType
-     */
-    public function list(Data $filters, ?SortData $sort = null, ?PaginationData $pagination = null): LengthAwarePaginator
-    {
-        /** @var LengthAwarePaginator<int, User> */
-        return parent::list($filters, $sort, $pagination);
     }
 
     public function update(Model $model, array $data): User
