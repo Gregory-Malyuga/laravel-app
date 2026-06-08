@@ -14,7 +14,7 @@ readonly class CreateUserHandler implements HandlerInterface
 {
     public function __construct(private UserRepositoryInterface $repository) {}
 
-    public function handle(object $message): mixed
+    public function handle(object $message): int
     {
         assert($message instanceof CreateUserCommand);
 
@@ -36,6 +36,6 @@ readonly class CreateUserHandler implements HandlerInterface
 
         UserCreated::dispatch($record);
 
-        return $record;
+        return $record->id;
     }
 }

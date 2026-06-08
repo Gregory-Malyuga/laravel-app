@@ -9,7 +9,7 @@ readonly class LaravelCommandBus implements CommandBusInterface
 {
     public function __construct(private Container $container) {}
 
-    public function dispatch(BaseCommand $command): mixed
+    public function dispatch(BaseCommand $command): ?int
     {
         $commandClass = get_class($command);
         $handlerClass = preg_replace('/Command$/', 'Handler', $commandClass) ?? $commandClass;
@@ -20,8 +20,8 @@ readonly class LaravelCommandBus implements CommandBusInterface
 
         $handler = $this->container->make($handlerClass);
 
-        if (! $handler instanceof HandlerInterface) {
-            throw new RuntimeException("Handler {$handlerClass} must implement ".HandlerInterface::class);
+        if (! $handler instanceof CommandHandlerInterface) {
+            throw new RuntimeException("Handler {$handlerClass} must implement ".CommandHandlerInterface::class);
         }
 
         return $handler->handle($command);

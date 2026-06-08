@@ -4,5 +4,5 @@ namespace Shared\Bus;
 
 interface QueryBusInterface
 {
-    public function ask(BaseQuery $query): mixed;
+    public function ask(BaseQuery $query): ?object;
 }

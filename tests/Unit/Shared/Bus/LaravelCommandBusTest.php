@@ -6,7 +6,7 @@ use Illuminate\Container\Container;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Shared\Bus\BaseCommand;
-use Shared\Bus\HandlerInterface;
+use Shared\Bus\CommandHandlerInterface;
 use Shared\Bus\LaravelCommandBus;
 
 class LaravelCommandBusTest extends TestCase
@@ -27,7 +27,7 @@ class LaravelCommandBusTest extends TestCase
 
         $result = $this->bus->dispatch(new StubCommand('payload'));
 
-        $this->assertSame('handled:payload', $result);
+        $this->assertSame(42, $result);
     }
 
     public function test_resolves_handler_by_replacing_command_suffix(): void
@@ -64,14 +64,14 @@ class StubCommand implements BaseCommand
     public function __construct(public readonly string $payload) {}
 }
 
-class StubHandler implements HandlerInterface
+class StubHandler implements CommandHandlerInterface
 {
     public bool $called = false;
 
-    public function handle(object $message): mixed
+    public function handle(object $message): ?int
     {
         $this->called = true;
 
-        return 'handled:'.($message instanceof StubCommand ? $message->payload : '');
+        return 42;
     }
 }

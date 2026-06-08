@@ -6,5 +6,5 @@ use Shared\Bus\BaseQuery;
 
 readonly class FindUserByIdQuery implements BaseQuery
 {
-    public function __construct(public readonly int $id) {}
+    public function __construct(public int $id) {}
 }

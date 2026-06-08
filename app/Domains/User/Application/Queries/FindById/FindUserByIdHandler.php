@@ -8,15 +8,12 @@ use Shared\Bus\HandlerInterface;
 
 readonly class FindUserByIdHandler implements HandlerInterface
 {
-    public function __construct(private readonly UserRepositoryInterface $repository) {}
+    public function __construct(private UserRepositoryInterface $repository) {}
 
-    public function handle(object $message): mixed
+    public function handle(object $message): User
     {
         assert($message instanceof FindUserByIdQuery);
 
-        /** @var User $record */
-        $record = $this->repository->findOrFail($message->id);
-
-        return $record;
+        return $this->repository->findOrFail($message->id);
     }
 }

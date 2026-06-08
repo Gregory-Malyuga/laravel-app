@@ -8,11 +8,10 @@ use OpenApi\Attributes as OA;
 #[OA\Schema(
     schema: 'User',
     properties: [
+        new OA\Property(property: 'id', type: 'integer'),
         new OA\Property(property: 'name', type: 'string'),
         new OA\Property(property: 'email', type: 'string', format: 'email'),
         new OA\Property(property: 'role', type: 'string'),
-        new OA\Property(property: 'password', type: 'string', nullable: true),
-        new OA\Property(property: 'id', type: 'integer', nullable: true),
         new OA\Property(property: 'created_at', type: 'string', nullable: true, format: 'date-time'),
         new OA\Property(property: 'updated_at', type: 'string', nullable: true, format: 'date-time'),
     ],
@@ -67,12 +66,12 @@ use OpenApi\Attributes as OA;
     requestBody: new OA\RequestBody(
         required: true,
         content: new OA\JsonContent(
-            required: ['name', 'email', 'role'],
+            required: ['name', 'email', 'password', 'role'],
             properties: [
                 new OA\Property(property: 'name', type: 'string'),
                 new OA\Property(property: 'email', type: 'string', format: 'email'),
+                new OA\Property(property: 'password', type: 'string'),
                 new OA\Property(property: 'role', type: 'string'),
-                new OA\Property(property: 'password', type: 'string', nullable: true),
             ],
         ),
     ),

@@ -9,7 +9,7 @@ class LaravelQueryBus implements QueryBusInterface
 {
     public function __construct(private readonly Container $container) {}
 
-    public function ask(BaseQuery $query): mixed
+    public function ask(BaseQuery $query): object
     {
         $queryClass = get_class($query);
         $handlerClass = preg_replace('/Query$/', 'Handler', $queryClass) ?? $queryClass;
@@ -20,8 +20,8 @@ class LaravelQueryBus implements QueryBusInterface
 
         $handler = $this->container->make($handlerClass);
 
-        if (! $handler instanceof HandlerInterface) {
-            throw new RuntimeException("Handler {$handlerClass} must implement ".HandlerInterface::class);
+        if (! $handler instanceof QueryHandlerInterface) {
+            throw new RuntimeException("Handler {$handlerClass} must implement ".QueryHandlerInterface::class);
         }
 
         return $handler->handle($query);
