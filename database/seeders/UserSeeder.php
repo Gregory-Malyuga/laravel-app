@@ -13,8 +13,8 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'name' => 'OEM User',
-                'email' => 'user@dvizhcom.ru',
+                'name' => 'User',
+                'email' => 'user@example.com',
                 'password' => Hash::make('User123!'),
                 'role' => UserRole::User->value,
             ],
