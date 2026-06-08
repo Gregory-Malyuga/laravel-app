@@ -15,9 +15,4 @@ class EsTruncationBag
     {
         return $this->truncated;
     }
-
-    public function reset(): void
-    {
-        $this->truncated = false;
-    }
 }

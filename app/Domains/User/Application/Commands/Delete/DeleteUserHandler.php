@@ -30,8 +30,9 @@ readonly class DeleteUserHandler implements HandlerInterface
             }
         }
 
+        $id = $record->id;
         $this->repository->delete($record);
-        UserDeleted::dispatch($record);
+        UserDeleted::dispatch($id);
 
         return null;
     }

@@ -7,6 +7,7 @@ use Elastic\Elasticsearch\Response\Elasticsearch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class HealthController extends Controller
@@ -35,7 +36,9 @@ class HealthController extends Controller
             DB::connection()->getPdo();
 
             return true;
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('Health check: DB unavailable', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -46,7 +49,9 @@ class HealthController extends Controller
             $response = $this->es->ping();
 
             return $response instanceof Elasticsearch && $response->asBool();
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('Health check: Elasticsearch unavailable', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
@@ -57,7 +62,9 @@ class HealthController extends Controller
             Redis::connection()->ping();
 
             return true;
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            Log::warning('Health check: Redis unavailable', ['error' => $e->getMessage()]);
+
             return false;
         }
     }
