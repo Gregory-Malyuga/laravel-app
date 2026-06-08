@@ -2,7 +2,14 @@
 
 ## В работе
 
-_Нет активных задач._
+### Мелкие технические долги (после аудита 2026-06-08)
+
+- [x] `QueryHandlerInterface::handle(): object|null` — убрать `|null`, привести к `object` ✓
+- [x] `MakeDomainCommand::stubController()` — добавить `assert($id !== null)` после `dispatch()` в `store()` ✓
+- [x] `LogoutHandler` — перенести `PersonalAccessToken::whereKey()->delete()` в `UserRepositoryInterface::deleteToken(int $id): void` (Application не должен знать про Sanctum)
+- [x] `UserRepositoryInterface::list()` — интерфейс уже использует `Data`, override из `UserRepository` удалён, `@phpstan-ignore` убран ✓
+- [x] ADR — зафиксировать ~10 решений из `docs/state.md` без ADR (Auth→User слияние, `UserDeleted` без `SerializesModels`, async ES-sync, `UserNotFoundException`→404 и др.)
+- [x] `composer.json` — убрать `@no_additional_args` из scripts (нестандартный токен, передаётся артизану буквально)
 
 ## Сделано
 

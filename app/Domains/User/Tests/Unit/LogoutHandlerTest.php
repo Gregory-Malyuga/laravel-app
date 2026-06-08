@@ -4,6 +4,7 @@ namespace Domains\User\Tests\Unit;
 
 use Domains\User\Application\Commands\Logout\LogoutCommand;
 use Domains\User\Application\Commands\Logout\LogoutHandler;
+use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -19,7 +20,7 @@ class LogoutHandlerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->handler = new LogoutHandler;
+        $this->handler = new LogoutHandler(app(UserRepositoryInterface::class));
     }
 
     public function test_deletes_token(): void

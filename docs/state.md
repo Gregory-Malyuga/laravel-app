@@ -7,6 +7,24 @@
 Рефакторинг завершён. Pre-push gate чист: lint, pint, phpstan level 8, deptrac, docs:check, тесты (124 passed, 27 skipped).
 Незакоммиченные изменения накоплены за сессию — коммит отложен явно.
 
+## Аудит 2026-06-08 — итог
+
+Полный аудит проведён после CQRS-рефактора. Проект в хорошем состоянии.
+
+### Закрыто / подтверждено ✓
+
+- **ES маппинг** — `database/elasticsearch/users.json` корректный (`search_as_you_type` + `_2gram`/`_3gram`). `elasticsearch:setup` добавлен в `composer setup`. ✓
+- **ES truncation header** — `AddEsSearchTruncatedHeader` подключён в api-группе (`bootstrap/app.php:25`). `EsTruncationBag` — singleton. `InteractsWithElasticsearch::fetchIdsFromElasticsearch()` вызывает `markTruncated()` при переполнении. ✓
+- **Docker local dev** — health checks на `php`/`caddy`, redis без пароля, порт 6379 открыт — намеренно. Бой будет на Docker Swarm / Kubernetes с отдельным compose. ✓
+- **PHP `^8.5` + `:latest` образ** — принято осознанно. ✓
+- **CI pgsql vs SQLite** — проверено вручную, паритет есть. ✓
+- **`.env.example`** — обновлён, отражает реальный стек. ✓
+
+### Остаётся открытым (см. roadmap)
+
+- `LogoutHandler` — прямой `PersonalAccessToken` в Application-слое
+- ~10 решений из этого файла без ADR
+
 ## Recent decisions
 
 - **`CommandHandlerInterface` / `QueryHandlerInterface`** — `HandlerInterface` удалён. Commands возвращают `?int`, Queries возвращают `object`. Подробности: ADR-0004.

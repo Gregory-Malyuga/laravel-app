@@ -7,6 +7,7 @@ use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Exceptions\UserNotFoundException;
 use Domains\User\Domain\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\PersonalAccessToken;
 use Shared\Elasticsearch\ElasticsearchSearchable;
 use Shared\Elasticsearch\InteractsWithElasticsearch;
 use Shared\Filters\FilterInterface;
@@ -74,5 +75,10 @@ class UserRepository extends BaseRepository implements ElasticsearchSearchable, 
         $user = User::where('email', $email)->first();
 
         return $user;
+    }
+
+    public function deleteToken(int $tokenId): void
+    {
+        PersonalAccessToken::whereKey($tokenId)->delete();
     }
 }
