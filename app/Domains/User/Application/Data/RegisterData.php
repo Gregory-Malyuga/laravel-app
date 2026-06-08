@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Auth\Data;
+namespace Domains\User\Application\Data;
 
 use Shared\Http\Data\BaseData;
 

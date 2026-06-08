@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Auth\Tests\Feature;
+namespace Domains\User\Tests\Feature;
 
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Models\User;

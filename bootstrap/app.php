@@ -1,7 +1,7 @@
 <?php
 
-use Domains\Auth\Domain\Exceptions\AuthForbiddenException;
-use Domains\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Domains\User\Domain\Exceptions\InvalidCredentialsException;
+use Domains\User\Domain\Exceptions\UserForbiddenException;
 use Domains\User\Domain\Exceptions\UserInsufficientRoleException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,7 +30,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (InvalidCredentialsException $e) {
             return response()->json(['message' => $e->getMessage()], 401);
         });
-        $exceptions->render(function (AuthForbiddenException $e) {
+        $exceptions->render(function (UserForbiddenException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
         });
     })->create();

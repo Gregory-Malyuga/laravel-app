@@ -1,13 +1,13 @@
 <?php
 
-namespace Domains\Auth\Tests\Unit;
+namespace Domains\User\Tests\Unit;
 
-use Domains\Auth\Application\Commands\Login\LoginCommand;
-use Domains\Auth\Application\Commands\Login\LoginHandler;
-use Domains\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Domains\User\Application\Commands\Login\LoginCommand;
+use Domains\User\Application\Commands\Login\LoginHandler;
+use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Enums\UserRole;
+use Domains\User\Domain\Exceptions\InvalidCredentialsException;
 use Domains\User\Domain\Models\User;
-use Domains\User\Infrastructure\Repositories\UserRepository;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Hash;
@@ -24,7 +24,7 @@ class LoginHandlerTest extends TestCase
             'role' => UserRole::Admin,
         ]);
 
-        $handler = new LoginHandler(app(UserRepository::class));
+        $handler = new LoginHandler(app(UserRepositoryInterface::class));
         $result = $handler->handle(new LoginCommand('admin@test.com', 'secret'));
 
         $this->assertInstanceOf(User::class, $result);
@@ -41,7 +41,7 @@ class LoginHandlerTest extends TestCase
 
         $this->expectException(InvalidCredentialsException::class);
 
-        $handler = new LoginHandler(app(UserRepository::class));
+        $handler = new LoginHandler(app(UserRepositoryInterface::class));
         $handler->handle(new LoginCommand('admin@test.com', 'wrong'));
     }
 
@@ -49,7 +49,7 @@ class LoginHandlerTest extends TestCase
     {
         $this->expectException(InvalidCredentialsException::class);
 
-        $handler = new LoginHandler(app(UserRepository::class));
+        $handler = new LoginHandler(app(UserRepositoryInterface::class));
         $handler->handle(new LoginCommand('nobody@test.com', 'anything'));
     }
 }

@@ -4,7 +4,7 @@
 
 ## Now
 
-Незакоммичены изменения в `app/Domains/User/Domain/Models/User.php` и `UserOpenApi.php` — природа правок неизвестна, требуют ревью перед коммитом.
+В процессе: приведение Auth домена к стандартной структуре — контроллеры перенесены из `Auth/Http/` в `Auth/Presentation/Http/` (staged), правки в контроллерах и `routes/api.php` (unstaged). Deptrac не покрывал старый путь, после коммита Auth попадёт в `PresentationLayer`.
 
 ## Recent decisions
 

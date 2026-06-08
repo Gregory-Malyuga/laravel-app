@@ -42,7 +42,10 @@ class UserController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $request->validate(['password' => ['required', 'string', 'min:8']]);
+        $request->validate([
+            'password' => ['required', 'string', 'min:8'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        ]);
 
         $dto = UserData::from($request);
 

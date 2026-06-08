@@ -1,16 +1,16 @@
 <?php
 
-namespace Domains\Auth\Application\Commands\Login;
+namespace Domains\User\Application\Commands\Login;
 
-use Domains\Auth\Domain\Exceptions\InvalidCredentialsException;
+use Domains\User\Application\Repositories\UserRepositoryInterface;
+use Domains\User\Domain\Exceptions\InvalidCredentialsException;
 use Domains\User\Domain\Models\User;
-use Domains\User\Infrastructure\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Shared\Bus\HandlerInterface;
 
 readonly class LoginHandler implements HandlerInterface
 {
-    public function __construct(private UserRepository $repository) {}
+    public function __construct(private UserRepositoryInterface $repository) {}
 
     public function handle(object $message): User
     {

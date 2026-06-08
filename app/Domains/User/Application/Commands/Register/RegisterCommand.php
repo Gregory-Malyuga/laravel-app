@@ -1,12 +1,13 @@
 <?php
 
-namespace Domains\Auth\Application\Commands\Login;
+namespace Domains\User\Application\Commands\Register;
 
 use Shared\Bus\BaseCommand;
 
-readonly class LoginCommand implements BaseCommand
+readonly class RegisterCommand implements BaseCommand
 {
     public function __construct(
+        public string $name,
         public string $email,
         public string $password,
     ) {}

@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Auth\Tests\Feature;
+namespace Domains\User\Tests\Feature;
 
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;

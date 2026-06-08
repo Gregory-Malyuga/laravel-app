@@ -1,10 +1,10 @@
 <?php
 
-namespace Domains\Auth\Domain\Exceptions;
+namespace Domains\User\Domain\Exceptions;
 
 use RuntimeException;
 
-class AuthForbiddenException extends RuntimeException
+class UserForbiddenException extends RuntimeException
 {
     public function __construct()
     {

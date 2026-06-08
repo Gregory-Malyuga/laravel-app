@@ -1,9 +1,11 @@
 <?php
 
-namespace Domains\Auth\Http\Controllers;
+namespace Domains\User\Presentation\Http\Controllers;
 
-use Domains\Auth\Application\Commands\Login\LoginCommand;
-use Domains\Auth\Data\LoginData;
+use Domains\User\Application\Commands\Login\LoginCommand;
+use Domains\User\Application\Data\AuthTokenData;
+use Domains\User\Application\Data\AuthUserData;
+use Domains\User\Application\Data\LoginData;
 use Domains\User\Domain\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller;
@@ -20,11 +22,6 @@ class LoginController extends Controller
 
         $token = $user->createToken('api')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role->value,
-        ]]);
+        return response()->json(new AuthTokenData($token, AuthUserData::from($user)));
     }
 }

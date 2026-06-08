@@ -2,17 +2,17 @@
 
 namespace Domains\User\Application\Commands\Update;
 
+use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Events\UserUpdated;
 use Domains\User\Domain\Exceptions\UserInsufficientRoleException;
 use Domains\User\Domain\Models\User;
-use Domains\User\Infrastructure\Repositories\UserRepository;
 use Illuminate\Support\Facades\Hash;
 use Shared\Bus\HandlerInterface;
 
 readonly class UpdateUserHandler implements HandlerInterface
 {
-    public function __construct(private UserRepository $repository) {}
+    public function __construct(private UserRepositoryInterface $repository) {}
 
     public function handle(object $message): mixed
     {
@@ -41,10 +41,8 @@ readonly class UpdateUserHandler implements HandlerInterface
             $data['password'] = Hash::make($message->password);
         }
 
-        $this->repository->update($record, $data);
+        $record = $this->repository->update($record, $data);
 
-        /** @var User $record */
-        $record = $this->repository->findOrFail($message->id);
         UserUpdated::dispatch($record);
 
         return $record;

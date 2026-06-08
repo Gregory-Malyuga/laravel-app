@@ -1,8 +1,8 @@
 <?php
 
-use Domains\Auth\Http\Controllers\LoginController;
-use Domains\Auth\Http\Controllers\LogoutController;
-use Domains\Auth\Http\Controllers\RegisterController;
+use Domains\User\Presentation\Http\Controllers\LoginController;
+use Domains\User\Presentation\Http\Controllers\LogoutController;
+use Domains\User\Presentation\Http\Controllers\RegisterController;
 use Domains\User\Presentation\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 

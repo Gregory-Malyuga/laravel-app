@@ -3,50 +3,6 @@ deptrac:
     - ./app/Shared
     - ./app/Domains
   layers:
-    - name: Resource
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Http\\Resources\\.*#'
-    - name: Middleware
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Http\\Middleware\\.*#'
-    - name: Service
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Services\\.*#'
-    - name: Repository
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Repositories\\.*#'
-    - name: Model
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Models\\.*#'
-    - name: Job
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Jobs\\.*#'
-    - name: Event
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Events\\.*#'
-    - name: Listener
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Listeners\\.*#'
-    - name: Provider
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Providers\\.*#'
-    - name: Command
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Console\\.*#'
-    - name: Exception
-      collectors:
-        - type: classNameRegex
-          value: '#^App\\Exceptions\\.*#'
     # DDD layers — Domains\*\{Layer}\*
     - name: DomainLayer
       collectors:
@@ -72,6 +28,7 @@ deptrac:
       collectors:
         - type: classNameRegex
           value: '#^Domains\\[^\\]+\\Tests\\.*#'
+    # External vendors
     - name: Laravel
       collectors:
         - type: classNameRegex
@@ -111,91 +68,17 @@ deptrac:
         - type: classNameRegex
           value: '#^Mockery.*#'
   ruleset:
-    # HTTP layer: Controller orchestrates Service and returns Resource
-    Controller:
-      - Service
-      - FormRequest
-      - Resource
-      - OpenApi
-      - Laravel
-    FormRequest:
-      - Laravel
-    Resource:
-      - Model
-      - Laravel
-    Middleware:
-      - Laravel
-    # Business layer: Service orchestrates Repository and dispatches Jobs/Events
-    # Service MUST NOT call another Service directly (§3 CLAUDE.md) — use Job or Event
-    Service:
-      - Repository
-      - Job
-      - Event
-      - Model
-      - Laravel
-      - Elastic
-    # Data layer
-    Repository:
-      - Model
-      - Laravel
-      - Elastic
-    Model:
-      - Laravel
-    # Async
-    Job:
-      - Service
-      - Repository
-      - Model
-      - Laravel
-    Event:
-      - Model
-      - Laravel
-    Listener:
-      - Service
-      - Repository
-      - Laravel
-    # Infrastructure / bootstrap
-    Provider:
-      - Service
-      - Repository
-      - Shared
-      - Laravel
-      - Elastic
-    Command:
-      - Service
-      - Repository
-      - Laravel
-      - Elastic
-    Exception:
-      - Laravel
-    Laravel: []
-    Elastic: []
-    OpenApi: []
-    Spatie: []
-    Shared:
-      - Laravel
-      - Elastic
-      - Spatie
-      - OpenApi
-    PHPUnit: []
-    TestSupport:
-      - Shared
-      - Laravel
-      - Elastic
-      - Spatie
-      - PHPUnit
-    # DDD layers
     DomainLayer:
       - Laravel
       - Spatie
     ApplicationLayer:
       - DomainLayer
-      - InfrastructureLayer
       - Shared
       - Laravel
       - Spatie
     InfrastructureLayer:
       - DomainLayer
+      - ApplicationLayer
       - Shared
       - Laravel
       - Elastic
@@ -204,7 +87,6 @@ deptrac:
       - ApplicationLayer
       - DomainLayer
       - Shared
-      - Controller
       - Laravel
       - Spatie
       - OpenApi
@@ -228,3 +110,19 @@ deptrac:
       - Elastic
       - PHPUnit
       - Mockery
+    Laravel: []
+    Elastic: []
+    OpenApi: []
+    Spatie: []
+    Shared:
+      - Laravel
+      - Elastic
+      - Spatie
+      - OpenApi
+    PHPUnit: []
+    TestSupport:
+      - Shared
+      - Laravel
+      - Elastic
+      - Spatie
+      - PHPUnit

@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Auth\Http\OpenApi;
+namespace Domains\User\Presentation\Http\OpenApi;
 
 use OpenApi\Attributes as OA;
 
@@ -94,4 +94,4 @@ use OpenApi\Attributes as OA;
         new OA\Response(response: 401, description: 'Не аутентифицирован'),
     ],
 )]
-class AuthOpenApi {}
+class UserAuthOpenApi {}

@@ -1,6 +1,6 @@
 <?php
 
-namespace Domains\Auth\Domain\Exceptions;
+namespace Domains\User\Domain\Exceptions;
 
 use RuntimeException;
 

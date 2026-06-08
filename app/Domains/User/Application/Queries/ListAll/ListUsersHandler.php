@@ -2,13 +2,13 @@
 
 namespace Domains\User\Application\Queries\ListAll;
 
-use Domains\User\Infrastructure\Repositories\UserRepository;
+use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Shared\Bus\HandlerInterface;
 
 readonly class ListUsersHandler implements HandlerInterface
 {
-    public function __construct(private readonly UserRepository $repository) {}
+    public function __construct(private readonly UserRepositoryInterface $repository) {}
 
     public function handle(object $message): mixed
     {
