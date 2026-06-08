@@ -39,4 +39,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         });
     })->create();
 
+// app_path() must point to app/App/ so that Application::getNamespace()
+// can match the PSR-4 entry "App\\": "app/App/" in composer.json.
+// Without this, artisan make:* and getNamespace() throw "Unable to detect application namespace".
+$app->useAppPath(dirname(__DIR__).'/app/App');
+
 return $app;
