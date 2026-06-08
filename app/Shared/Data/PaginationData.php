@@ -19,4 +19,13 @@ class PaginationData extends Data
             perPage: $request->integer('per_page', 15),
         );
     }
+
+    /** @return array<string, list<string>> */
+    public static function rules(): array
+    {
+        return [
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+        ];
+    }
 }

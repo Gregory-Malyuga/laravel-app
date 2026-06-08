@@ -4,24 +4,14 @@ namespace Domains\User\Application\Queries\ListAll;
 
 use Domains\User\Application\Data\UserFilterData;
 use Illuminate\Http\Request;
-use Shared\Bus\BaseQuery;
-use Shared\Data\PaginationData;
-use Shared\Data\SortData;
+use Shared\Bus\ListEntityQuery;
 
-readonly class ListUsersQuery implements BaseQuery
+class ListUsersQuery extends ListEntityQuery
 {
-    public function __construct(
-        public readonly UserFilterData $filters,
-        public readonly SortData $sort,
-        public readonly PaginationData $pagination,
-    ) {}
+    protected const array SORTABLE = ['id', 'name', 'email', 'created_at'];
 
-    public static function fromRequest(Request $request): self
+    protected static function filtersFromRequest(Request $request): UserFilterData
     {
-        return new self(
-            filters: UserFilterData::from($request->all()),
-            sort: SortData::fromRequest($request),
-            pagination: PaginationData::fromRequest($request),
-        );
+        return UserFilterData::from($request);
     }
 }
