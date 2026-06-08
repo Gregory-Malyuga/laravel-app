@@ -4,21 +4,23 @@
 
 ## Now
 
-Незакоммиченные изменения в User домене и Shared. Ожидают коммита тремя группами (см. ниже).  
-PHPStan level 8 — проходит после фикса `@extends ModelNotFoundException<User>`.
+Рефакторинг завершён. Pre-push gate чист: lint, pint, phpstan level 8, deptrac, docs:check, тесты (124 passed, 27 skipped).
+Незакоммиченные изменения накоплены за сессию — коммит отложен явно.
 
 ## Recent decisions
 
-- **`UserRepositoryInterface` в Application слое** — ports & adapters: интерфейс в `Application/Repositories/`, реализация в `Infrastructure/Repositories/`. Все 7 handlers переведены на интерфейс. Deptrac обновлён: `ApplicationLayer` больше не может импортировать Infrastructure напрямую.
-- **Auth домен упразднён, влит в User** — `Auth` не имел собственной сущности; контроллеры, команды, handlers и DTOs перенесены в `Domains/User`. `AuthServiceProvider` слит с `UserServiceProvider`.
-- **`LogoutHandler` через `PersonalAccessToken::whereKey()->delete()`** — прямой query без загрузки модели; обход PHP 8.5-бага с `void` vs `mixed` return type в `HandlerInterface`.
-- **`unique:users,email` только в store/update** — убран из `UserData::rules()` (общий DTO для create+update); `Rule::unique('users')` в `store()`, `Rule::unique('users')->ignore($id)` в `update()`.
-- **`UpdateUserHandler` захватывает return `update()`** — `BaseRepository::update()` возвращает `$model->fresh()`; теперь событие и ответ содержат актуальные данные.
-- **`ListEntityQuery` базовый класс** — константа `SORTABLE` в каждом домене, `fromRequest()` объединяет валидацию sort + pagination + filters; `UserFilterData::rules()` для авто-валидации через Spatie.
-- **`UserDeleted` хранит `int $id`, не модель** — убран `SerializesModels`; `id` сохраняется до `delete()`, передаётся в событие; предотвращает падение десериализации в очереди после удаления записи.
-- **`UserElasticsearchSyncListener` реализует `ShouldQueue`** — ES-синхронизация асинхронная, очередь `imports`; `handleDeleted` принимает `$event->id`.
-- **`BaseFilterBuilder` fallback — намеренный дизайн** — поле в `FilterData`, не указанное в `filterMap`, уходит в `WHERE Str::snake($key) = $value` автоматически. Позволяет `make:domain` давать рабочую фильтрацию без ручных правок. Подробности: ADR-0003.
-- **`UserNotFoundException` → HTTP 404** — зарегистрирован в `bootstrap/app.php` через `$exceptions->render()`; `@extends ModelNotFoundException<User>` для PHPStan.
+- **`CommandHandlerInterface` / `QueryHandlerInterface`** — `HandlerInterface` удалён. Commands возвращают `?int`, Queries возвращают `object`. Подробности: ADR-0004.
+- **`safeClassExists()`** — обёртка вокруг `class_exists()` для защиты от Laravel ErrorException при отсутствии файла. Используется в `GenerateOpenApiDocsCommand`. Подробности: HIST-004.
+- **OpenAPI-генератор различает input/output DTO** — `{Name}Resource` для response schema, `Create{Name}Data` для POST requestBody, `Update{Name}Data` для PUT requestBody.
+- **`elasticsearch:setup` добавлен в `composer setup`** — ES-маппинг (`search_as_you_type` с `_2gram`/`_3gram`) создаётся автоматически при инициализации проекта.
+- **`.env.example` обновлён** — отражает реальный Docker-стек: pgsql, redis, elasticsearch, APP_URL=http://localhost:8088.
+- **`BaseFilterBuilder` синтаксис** — `new X()->method()` → `(new X())->method()` (PHP 8.4 / PHPStan).
+- **`assert($id !== null)`** — сужение `?int` до `int` в контроллерах после `dispatch()`.
+- **`UserRepositoryInterface` в Application слое** — ports & adapters: интерфейс в `Application/Repositories/`, реализация в `Infrastructure/Repositories/`. Deptrac: `ApplicationLayer` не импортирует Infrastructure.
+- **Auth домен упразднён, влит в User** — `Auth` не имел собственной сущности; контроллеры, команды, handlers и DTOs перенесены в `Domains/User`.
+- **`ListEntityQuery` базовый класс** — константа `SORTABLE` в каждом домене, `fromRequest()` объединяет валидацию sort + pagination + filters. Подробности: ADR-0003.
+- **`UserDeleted` хранит `int $id`, не модель** — убран `SerializesModels`; предотвращает падение десериализации в очереди после удаления записи.
+- **`UserNotFoundException` → HTTP 404** — зарегистрирован в `bootstrap/app.php` через `$exceptions->render()`.
 
 ## Last updated
 
@@ -26,4 +28,4 @@ PHPStan level 8 — проходит после фикса `@extends ModelNotFou
 
 ## Last commit
 
-fix: run vendor binaries via php to survive artifact permission loss
+fix: restore useAppPath to fix getNamespace() detection
