@@ -70,8 +70,11 @@ class MakeDomainCommandTest extends TestCase
     {
         $this->artisan('make:domain StubGen')->assertSuccessful();
 
-        $this->assertFileExists("{$this->domainBase}/Application/Data/StubGenData.php");
+        $this->assertFileExists("{$this->domainBase}/Application/Data/CreateStubGenData.php");
+        $this->assertFileExists("{$this->domainBase}/Application/Data/UpdateStubGenData.php");
+        $this->assertFileExists("{$this->domainBase}/Application/Data/StubGenResource.php");
         $this->assertFileExists("{$this->domainBase}/Application/Data/StubGenFilterData.php");
+        $this->assertFileDoesNotExist("{$this->domainBase}/Application/Data/StubGenData.php");
         $this->assertFileExists("{$this->domainBase}/Domain/Exceptions/StubGenNotFoundException.php");
         $this->assertFileExists("{$this->domainBase}/Infrastructure/Repositories/StubGenRepository.php");
         $this->assertFileExists("{$this->domainBase}/Providers/StubGenServiceProvider.php");
@@ -209,6 +212,46 @@ class MakeDomainCommandTest extends TestCase
         $content = $this->files->get("{$this->domainBase}/Presentation/Http/Controllers/StubGenController.php");
         $this->assertStringContainsString('CommandBusInterface', $content);
         $this->assertStringContainsString('QueryBusInterface', $content);
+        $this->assertStringContainsString('ListStubGensRequest', $content);
+        $this->assertStringContainsString('StoreStubGenRequest', $content);
+        $this->assertStringContainsString('UpdateStubGenRequest', $content);
+    }
+
+    public function test_creates_form_requests(): void
+    {
+        $this->artisan('make:domain StubGen')->assertSuccessful();
+
+        $this->assertFileExists("{$this->domainBase}/Presentation/Http/Requests/ListStubGensRequest.php");
+        $this->assertFileExists("{$this->domainBase}/Presentation/Http/Requests/StoreStubGenRequest.php");
+        $this->assertFileExists("{$this->domainBase}/Presentation/Http/Requests/UpdateStubGenRequest.php");
+
+        $listContent = $this->files->get("{$this->domainBase}/Presentation/Http/Requests/ListStubGensRequest.php");
+        $this->assertStringContainsString('extends ListRequest', $listContent);
+        $this->assertStringContainsString('ListStubGensQuery::SORTABLE', $listContent);
+
+        $storeContent = $this->files->get("{$this->domainBase}/Presentation/Http/Requests/StoreStubGenRequest.php");
+        $this->assertStringContainsString('CreateStubGenData::rules()', $storeContent);
+
+        $updateContent = $this->files->get("{$this->domainBase}/Presentation/Http/Requests/UpdateStubGenRequest.php");
+        $this->assertStringContainsString('UpdateStubGenData::rules()', $updateContent);
+    }
+
+    public function test_list_handler_uses_typed_paginator(): void
+    {
+        $this->artisan('make:domain StubGen')->assertSuccessful();
+
+        $content = $this->files->get("{$this->domainBase}/Application/Queries/ListAll/ListStubGensHandler.php");
+        $this->assertStringContainsString('LengthAwarePaginator<int, StubGen>', $content);
+        $this->assertStringNotContainsString('mixed', $content);
+    }
+
+    public function test_list_query_extends_list_entity_query(): void
+    {
+        $this->artisan('make:domain StubGen')->assertSuccessful();
+
+        $content = $this->files->get("{$this->domainBase}/Application/Queries/ListAll/ListStubGensQuery.php");
+        $this->assertStringContainsString('extends ListEntityQuery', $content);
+        $this->assertStringContainsString('SORTABLE', $content);
     }
 
     public function test_appends_routes_to_global_api_file(): void

@@ -201,6 +201,7 @@ class MakeDomainCommand extends Command
             "{$basePath}/Infrastructure/Repositories",
             "{$basePath}/Presentation/Http/Controllers",
             "{$basePath}/Presentation/Http/OpenApi",
+            "{$basePath}/Presentation/Http/Requests",
             "{$basePath}/Providers",
             $unitTestPath,
             $featureTestPath,
@@ -232,7 +233,9 @@ class MakeDomainCommand extends Command
         $map = [
             "{$basePath}/Domain/Models/{$name}.php" => $this->stubModel($name, $table, $fields),
             "{$basePath}/Domain/Database/Factories/{$name}Factory.php" => $this->stubFactory($name, $fields),
-            "{$basePath}/Application/Data/{$name}Data.php" => $this->stubData($name, $fields),
+            "{$basePath}/Application/Data/Create{$name}Data.php" => $this->stubCreateData($name, $fields),
+            "{$basePath}/Application/Data/Update{$name}Data.php" => $this->stubUpdateData($name, $fields),
+            "{$basePath}/Application/Data/{$name}Resource.php" => $this->stubResource($name, $fields),
             "{$basePath}/Application/Data/{$name}FilterData.php" => $this->stubFilterData($name, $fields),
             "{$basePath}/Domain/Exceptions/{$name}NotFoundException.php" => $this->stubNotFoundException($name),
             "{$basePath}/Infrastructure/Repositories/{$name}Repository.php" => $this->stubRepository($name),
@@ -249,6 +252,9 @@ class MakeDomainCommand extends Command
             "{$basePath}/Domain/Events/{$name}Created.php" => $this->stubEvent($name, 'Created'),
             "{$basePath}/Domain/Events/{$name}Updated.php" => $this->stubEvent($name, 'Updated'),
             "{$basePath}/Domain/Events/{$name}Deleted.php" => $this->stubEvent($name, 'Deleted'),
+            "{$basePath}/Presentation/Http/Requests/List{$name}sRequest.php" => $this->stubListRequest($name),
+            "{$basePath}/Presentation/Http/Requests/Store{$name}Request.php" => $this->stubStoreRequest($name),
+            "{$basePath}/Presentation/Http/Requests/Update{$name}Request.php" => $this->stubUpdateRequest($name),
             "{$basePath}/Presentation/Http/Controllers/{$name}Controller.php" => $this->stubController($name, $fields),
             "{$basePath}/Presentation/Http/OpenApi/{$name}OpenApi.php" => $this->stubOpenApi($name, $plural, $fields),
             "{$basePath}/Providers/{$name}ServiceProvider.php" => $this->stubServiceProvider($name),
@@ -449,12 +455,14 @@ class MakeDomainCommand extends Command
     /**
      * @param  array<string, array{phpType: string, nullable: bool, migration: string, decimal: bool, faker: string, rules: list<string>}>  $fields
      */
-    private function stubData(string $name, array $fields): string
+    /**
+     * @param  array<string, array{phpType: string, nullable: bool, migration: string, decimal: bool, faker: string, rules: list<string>}>  $fields
+     */
+    private function stubCreateData(string $name, array $fields): string
     {
-        // Required fields first, optional fields last (Pint: no_unreachable_default_argument_value)
         $required = '';
-        $optional = "        public readonly ?int \$id = null,\n";
-        $rules = "            'id' => ['nullable', 'integer'],\n";
+        $optional = '';
+        $rules = '';
 
         foreach ($fields as $fieldName => $def) {
             if ($def['nullable']) {
@@ -467,11 +475,7 @@ class MakeDomainCommand extends Command
             $rules .= "            '{$fieldName}' => ['{$ruleList}'],\n";
         }
 
-        $optional .= "        public readonly ?string \$created_at = null,\n";
-        $optional .= "        public readonly ?string \$updated_at = null,\n";
         $props = $required.$optional;
-        $rules .= "            'created_at' => ['nullable', 'string'],\n";
-        $rules .= "            'updated_at' => ['nullable', 'string'],\n";
 
         return <<<PHP
         <?php
@@ -480,7 +484,7 @@ class MakeDomainCommand extends Command
 
         use Shared\\Http\\Data\\BaseData;
 
-        class {$name}Data extends BaseData
+        class Create{$name}Data extends BaseData
         {
             public function __construct(
         {$props}    ) {}
@@ -491,6 +495,86 @@ class MakeDomainCommand extends Command
                 return [
         {$rules}        ];
             }
+        }
+        PHP;
+    }
+
+    /**
+     * @param  array<string, array{phpType: string, nullable: bool, migration: string, decimal: bool, faker: string, rules: list<string>}>  $fields
+     */
+    private function stubUpdateData(string $name, array $fields): string
+    {
+        $required = '';
+        $optional = '';
+        $rules = '';
+
+        foreach ($fields as $fieldName => $def) {
+            if ($def['nullable']) {
+                $optional .= "        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
+                $ruleList = implode("', '", $def['rules']);
+                $rules .= "            '{$fieldName}' => ['sometimes', '{$ruleList}'],\n";
+            } else {
+                $required .= "        public readonly {$def['phpType']} \${$fieldName},\n";
+                $ruleList = implode("', '", $def['rules']);
+                $rules .= "            '{$fieldName}' => ['{$ruleList}'],\n";
+            }
+        }
+
+        $props = $required.$optional;
+
+        return <<<PHP
+        <?php
+
+        namespace {$this->ns}\\Application\\Data;
+
+        use Shared\\Http\\Data\\BaseData;
+
+        class Update{$name}Data extends BaseData
+        {
+            public function __construct(
+        {$props}    ) {}
+
+            /** @return array<string, list<string>> */
+            public static function rules(): array
+            {
+                return [
+        {$rules}        ];
+            }
+        }
+        PHP;
+    }
+
+    /**
+     * @param  array<string, array{phpType: string, nullable: bool, migration: string, decimal: bool, faker: string, rules: list<string>}>  $fields
+     */
+    private function stubResource(string $name, array $fields): string
+    {
+        $required = "        public readonly int \$id,\n";
+        $optional = '';
+
+        foreach ($fields as $fieldName => $def) {
+            if ($def['nullable']) {
+                $optional .= "        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
+            } else {
+                $required .= "        public readonly {$def['phpType']} \${$fieldName},\n";
+            }
+        }
+
+        $optional .= "        public readonly ?string \$created_at = null,\n";
+        $optional .= "        public readonly ?string \$updated_at = null,\n";
+        $props = $required.$optional;
+
+        return <<<PHP
+        <?php
+
+        namespace {$this->ns}\\Application\\Data;
+
+        use Shared\\Http\\Data\\BaseData;
+
+        class {$name}Resource extends BaseData
+        {
+            public function __construct(
+        {$props}    ) {}
         }
         PHP;
     }
@@ -605,16 +689,16 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Commands\\Create;
 
-        use Shared\\Bus\\HandlerInterface;
+        use Shared\\Bus\\CommandHandlerInterface;
         use {$this->ns}\\Domain\\Events\\{$name}Created;
         use {$this->ns}\\Domain\\Models\\{$name};
         use {$this->ns}\\Infrastructure\\Repositories\\{$name}Repository;
 
-        readonly class Create{$name}Handler implements HandlerInterface
+        readonly class Create{$name}Handler implements CommandHandlerInterface
         {
             public function __construct(private {$name}Repository \$repository) {}
 
-            public function handle(object \$message): mixed
+            public function handle(object \$message): int
             {
                 assert(\$message instanceof Create{$name}Command);
 
@@ -624,7 +708,7 @@ class MakeDomainCommand extends Command
 
                 {$name}Created::dispatch(\$record);
 
-                return \$record;
+                return \$record->id;
             }
         }
         PHP;
@@ -672,29 +756,27 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Commands\\Update;
 
-        use Shared\\Bus\\HandlerInterface;
+        use Shared\\Bus\\CommandHandlerInterface;
         use {$this->ns}\\Domain\\Events\\{$name}Updated;
         use {$this->ns}\\Domain\\Models\\{$name};
         use {$this->ns}\\Infrastructure\\Repositories\\{$name}Repository;
 
-        readonly class Update{$name}Handler implements HandlerInterface
+        readonly class Update{$name}Handler implements CommandHandlerInterface
         {
             public function __construct(private {$name}Repository \$repository) {}
 
-            public function handle(object \$message): mixed
+            public function handle(object \$message): null
             {
                 assert(\$message instanceof Update{$name}Command);
 
                 /** @var {$name} \$record */
                 \$record = \$this->repository->findOrFail(\$message->id);
-                \$this->repository->update(\$record, [
+                \$updated = \$this->repository->update(\$record, [
         {$arrayItems}        ]);
 
-                /** @var {$name} \$record */
-                \$record = \$this->repository->findOrFail(\$message->id);
-                {$name}Updated::dispatch(\$record);
+                {$name}Updated::dispatch(\$updated);
 
-                return \$record;
+                return null;
             }
         }
         PHP;
@@ -723,15 +805,15 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Commands\\Delete;
 
-        use Shared\\Bus\\HandlerInterface;
+        use Shared\\Bus\\CommandHandlerInterface;
         use {$this->ns}\\Domain\\Events\\{$name}Deleted;
         use {$this->ns}\\Infrastructure\\Repositories\\{$name}Repository;
 
-        readonly class Delete{$name}Handler implements HandlerInterface
+        readonly class Delete{$name}Handler implements CommandHandlerInterface
         {
             public function __construct(private {$name}Repository \$repository) {}
 
-            public function handle(object \$message): mixed
+            public function handle(object \$message): null
             {
                 assert(\$message instanceof Delete{$name}Command);
 
@@ -752,28 +834,12 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Queries\\ListAll;
 
-        use Shared\\Bus\\BaseQuery;
-        use Shared\\Data\\PaginationData;
-        use Shared\\Data\\SortData;
-        use {$this->ns}\\Application\\Data\\{$name}FilterData;
-        use Illuminate\\Http\\Request;
+        use Shared\\Bus\\ListEntityQuery;
 
-        readonly class List{$name}sQuery implements BaseQuery
+        class List{$name}sQuery extends ListEntityQuery
         {
-            public function __construct(
-                public readonly {$name}FilterData \$filters,
-                public readonly SortData \$sort,
-                public readonly PaginationData \$pagination,
-            ) {}
-
-            public static function fromRequest(Request \$request): self
-            {
-                return new self(
-                    filters: {$name}FilterData::from(\$request->all()),
-                    sort: SortData::fromRequest(\$request),
-                    pagination: PaginationData::fromRequest(\$request),
-                );
-            }
+            /** @var list<string> */
+            public const SORTABLE = ['id'];
         }
         PHP;
     }
@@ -785,19 +851,21 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Queries\\ListAll;
 
-        use Shared\\Bus\\HandlerInterface;
+        use Shared\\Bus\\QueryHandlerInterface;
+        use {$this->ns}\\Domain\\Models\\{$name};
         use {$this->ns}\\Infrastructure\\Repositories\\{$name}Repository;
         use Illuminate\\Contracts\\Pagination\\LengthAwarePaginator;
 
-        readonly class List{$name}sHandler implements HandlerInterface
+        readonly class List{$name}sHandler implements QueryHandlerInterface
         {
             public function __construct(private readonly {$name}Repository \$repository) {}
 
-            public function handle(object \$message): mixed
+            /** @return LengthAwarePaginator<int, {$name}> */
+            public function handle(object \$message): LengthAwarePaginator
             {
                 assert(\$message instanceof List{$name}sQuery);
 
-                /** @var LengthAwarePaginator<int, mixed> \$result */
+                /** @var LengthAwarePaginator<int, {$name}> \$result */
                 \$result = \$this->repository->list(
                     \$message->filters,
                     \$message->sort,
@@ -833,15 +901,15 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Application\\Queries\\FindById;
 
-        use Shared\\Bus\\HandlerInterface;
+        use Shared\\Bus\\QueryHandlerInterface;
         use {$this->ns}\\Domain\\Models\\{$name};
         use {$this->ns}\\Infrastructure\\Repositories\\{$name}Repository;
 
-        readonly class Find{$name}ByIdHandler implements HandlerInterface
+        readonly class Find{$name}ByIdHandler implements QueryHandlerInterface
         {
             public function __construct(private readonly {$name}Repository \$repository) {}
 
-            public function handle(object \$message): mixed
+            public function handle(object \$message): {$name}
             {
                 assert(\$message instanceof Find{$name}ByIdQuery);
 
@@ -894,20 +962,25 @@ class MakeDomainCommand extends Command
 
         namespace {$this->ns}\\Presentation\\Http\\Controllers;
 
-        use Illuminate\\Routing\\Controller;
-        use Shared\\Bus\\CommandBusInterface;
-        use Shared\\Bus\\QueryBusInterface;
-        use {$this->ns}\\Application\\Commands\\Create\\Create{$name}Command;
-        use {$this->ns}\\Application\\Commands\\Delete\\Delete{$name}Command;
-        use {$this->ns}\\Application\\Commands\\Update\\Update{$name}Command;
-        use {$this->ns}\\Application\\Data\\{$name}Data;
-        use {$this->ns}\\Domain\\Models\\{$name};
-        use {$this->ns}\\Application\\Queries\\FindById\\Find{$name}ByIdQuery;
-        use {$this->ns}\\Application\\Queries\\ListAll\\List{$name}sQuery;
         use Illuminate\\Contracts\\Pagination\\LengthAwarePaginator;
         use Illuminate\\Http\\JsonResponse;
         use Illuminate\\Http\\Request;
+        use Illuminate\\Routing\\Controller;
+        use Shared\\Bus\\CommandBusInterface;
+        use Shared\\Bus\\QueryBusInterface;
         use Spatie\\LaravelData\\PaginatedDataCollection;
+        use {$this->ns}\\Application\\Commands\\Create\\Create{$name}Command;
+        use {$this->ns}\\Application\\Commands\\Delete\\Delete{$name}Command;
+        use {$this->ns}\\Application\\Commands\\Update\\Update{$name}Command;
+        use {$this->ns}\\Application\\Data\\Create{$name}Data;
+        use {$this->ns}\\Application\\Data\\Update{$name}Data;
+        use {$this->ns}\\Application\\Data\\{$name}Resource;
+        use {$this->ns}\\Application\\Queries\\FindById\\Find{$name}ByIdQuery;
+        use {$this->ns}\\Application\\Queries\\ListAll\\List{$name}sQuery;
+        use {$this->ns}\\Domain\\Models\\{$name};
+        use {$this->ns}\\Presentation\\Http\\Requests\\List{$name}sRequest;
+        use {$this->ns}\\Presentation\\Http\\Requests\\Store{$name}Request;
+        use {$this->ns}\\Presentation\\Http\\Requests\\Update{$name}Request;
 
         class {$name}Controller extends Controller
         {
@@ -916,12 +989,16 @@ class MakeDomainCommand extends Command
                 private readonly QueryBusInterface \$queries,
             ) {}
 
-            public function index(Request \$request): JsonResponse
+            public function index(List{$name}sRequest \$request): JsonResponse
             {
                 /** @var LengthAwarePaginator<int, {$name}> \$paginator */
-                \$paginator = \$this->queries->ask(List{$name}sQuery::fromRequest(\$request));
+                \$paginator = \$this->queries->ask(new List{$name}sQuery(
+                    filters: \$request->toFilters(),
+                    sort: \$request->toSort(),
+                    pagination: \$request->toPagination(),
+                ));
 
-                return response()->json({$name}Data::collect(\$paginator, PaginatedDataCollection::class));
+                return response()->json({$name}Resource::collect(\$paginator, PaginatedDataCollection::class));
             }
 
             public function show(int \$id): JsonResponse
@@ -929,37 +1006,116 @@ class MakeDomainCommand extends Command
                 /** @var {$name} \$record */
                 \$record = \$this->queries->ask(new Find{$name}ByIdQuery(\$id));
 
-                return response()->json({$name}Data::from(\$record));
+                return response()->json({$name}Resource::from(\$record));
             }
 
-            public function store(Request \$request): JsonResponse
+            public function store(Store{$name}Request \$request): JsonResponse
             {
-                \$dto = {$name}Data::from(\$request);
+                \$dto = Create{$name}Data::from(\$request);
 
-                /** @var {$name} \$record */
-                \$record = \$this->commands->dispatch(new Create{$name}Command(
+                \$id = \$this->commands->dispatch(new Create{$name}Command(
         {$createArgs}        ));
 
-                return response()->json({$name}Data::from(\$record), 201);
+                /** @var {$name} \$record */
+                \$record = \$this->queries->ask(new Find{$name}ByIdQuery(\$id));
+
+                return response()->json({$name}Resource::from(\$record), 201);
             }
 
-            public function update(int \$id, Request \$request): JsonResponse
+            public function update(int \$id, Update{$name}Request \$request): JsonResponse
             {
-                \$dto = {$name}Data::from(\$request);
+                \$dto = Update{$name}Data::from(\$request);
 
-                /** @var {$name} \$record */
-                \$record = \$this->commands->dispatch(new Update{$name}Command(
+                \$this->commands->dispatch(new Update{$name}Command(
                     id: \$id,
         {$updateArgs}        ));
 
-                return response()->json({$name}Data::from(\$record));
+                /** @var {$name} \$record */
+                \$record = \$this->queries->ask(new Find{$name}ByIdQuery(\$id));
+
+                return response()->json({$name}Resource::from(\$record));
             }
 
-            public function destroy(int \$id): JsonResponse
+            public function destroy(int \$id, Request \$request): JsonResponse
             {
                 \$this->commands->dispatch(new Delete{$name}Command(\$id));
 
                 return response()->json(null, 204);
+            }
+        }
+        PHP;
+    }
+
+    private function stubListRequest(string $name): string
+    {
+        return <<<PHP
+        <?php
+
+        namespace {$this->ns}\\Presentation\\Http\\Requests;
+
+        use {$this->ns}\\Application\\Data\\{$name}FilterData;
+        use {$this->ns}\\Application\\Queries\\ListAll\\List{$name}sQuery;
+        use Shared\\Http\\Requests\\ListRequest;
+
+        class List{$name}sRequest extends ListRequest
+        {
+            protected const SORTABLE = List{$name}sQuery::SORTABLE;
+
+            public function toFilters(): {$name}FilterData
+            {
+                return {$name}FilterData::from(\$this->all());
+            }
+        }
+        PHP;
+    }
+
+    private function stubStoreRequest(string $name): string
+    {
+        return <<<PHP
+        <?php
+
+        namespace {$this->ns}\\Presentation\\Http\\Requests;
+
+        use {$this->ns}\\Application\\Data\\Create{$name}Data;
+        use Illuminate\\Foundation\\Http\\FormRequest;
+
+        class Store{$name}Request extends FormRequest
+        {
+            public function authorize(): bool
+            {
+                return true;
+            }
+
+            /** @return array<string, list<mixed>> */
+            public function rules(): array
+            {
+                return Create{$name}Data::rules();
+            }
+        }
+        PHP;
+    }
+
+    private function stubUpdateRequest(string $name): string
+    {
+        return <<<PHP
+        <?php
+
+        namespace {$this->ns}\\Presentation\\Http\\Requests;
+
+        use {$this->ns}\\Application\\Data\\Update{$name}Data;
+        use Illuminate\\Foundation\\Http\\FormRequest;
+
+        class Update{$name}Request extends FormRequest
+        {
+            public function authorize(): bool
+            {
+                return true;
+            }
+
+            /** @return array<string, list<mixed>> */
+            public function rules(): array
+            {
+                return Update{$name}Data::rules();
             }
         }
         PHP;
