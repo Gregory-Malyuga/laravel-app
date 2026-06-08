@@ -1015,6 +1015,7 @@ class MakeDomainCommand extends Command
 
                 \$id = \$this->commands->dispatch(new Create{$name}Command(
         {$createArgs}        ));
+                assert(\$id !== null)
 
                 /** @var {$name} \$record */
                 \$record = \$this->queries->ask(new Find{$name}ByIdQuery(\$id));
