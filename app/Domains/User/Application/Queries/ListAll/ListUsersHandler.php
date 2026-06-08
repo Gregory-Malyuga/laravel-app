@@ -2,22 +2,21 @@
 
 namespace Domains\User\Application\Queries\ListAll;
 
-use Domains\User\Application\Data\UserFilterData;
 use Domains\User\Application\Repositories\UserRepositoryInterface;
+use Domains\User\Domain\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Shared\Bus\HandlerInterface;
+use Shared\Bus\QueryHandlerInterface;
 
-readonly class ListUsersHandler implements HandlerInterface
+readonly class ListUsersHandler implements QueryHandlerInterface
 {
     public function __construct(private UserRepositoryInterface $repository) {}
 
-    public function handle(object $message): mixed
+    /** @return LengthAwarePaginator<int, User> */
+    public function handle(object $message): LengthAwarePaginator
     {
         assert($message instanceof ListUsersQuery);
 
-        assert($message->filters instanceof UserFilterData);
-
-        /** @var LengthAwarePaginator<int, mixed> $result */
+        /** @var LengthAwarePaginator<int, User> $result */
         $result = $this->repository->list(
             $message->filters,
             $message->sort,

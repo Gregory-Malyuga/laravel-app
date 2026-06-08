@@ -27,10 +27,11 @@ class RegisterHandlerTest extends TestCase
 
     public function test_creates_user_with_user_role(): void
     {
-        /** @var User $user */
-        $user = $this->handler->handle(new RegisterCommand('Test User', 'register@test.com', 'password123'));
+        $id = $this->handler->handle(new RegisterCommand('Test User', 'register@test.com', 'password123'));
 
-        $this->assertInstanceOf(User::class, $user);
+        $this->assertGreaterThan(0, $id);
+
+        $user = User::findOrFail($id);
         $this->assertEquals('Test User', $user->name);
         $this->assertEquals('register@test.com', $user->email);
         $this->assertEquals(UserRole::User, $user->role);
@@ -38,9 +39,9 @@ class RegisterHandlerTest extends TestCase
 
     public function test_hashes_password(): void
     {
-        /** @var User $user */
-        $user = $this->handler->handle(new RegisterCommand('Test', 'hash@test.com', 'secret123'));
+        $id = $this->handler->handle(new RegisterCommand('Test', 'hash@test.com', 'secret123'));
 
+        $user = User::findOrFail($id);
         $this->assertTrue(Hash::check('secret123', $user->password));
     }
 

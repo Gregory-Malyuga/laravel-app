@@ -8,9 +8,9 @@ use Domains\User\Domain\Events\UserCreated;
 use Domains\User\Domain\Exceptions\UserInsufficientRoleException;
 use Domains\User\Domain\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Shared\Bus\HandlerInterface;
+use Shared\Bus\CommandHandlerInterface;
 
-readonly class CreateUserHandler implements HandlerInterface
+readonly class CreateUserHandler implements CommandHandlerInterface
 {
     public function __construct(private UserRepositoryInterface $repository) {}
 

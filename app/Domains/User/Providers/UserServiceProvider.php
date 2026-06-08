@@ -4,10 +4,10 @@ namespace Domains\User\Providers;
 
 use Domains\User\Application\Commands\Create\CreateUserHandler;
 use Domains\User\Application\Commands\Delete\DeleteUserHandler;
-use Domains\User\Application\Commands\Login\LoginHandler;
 use Domains\User\Application\Commands\Logout\LogoutHandler;
 use Domains\User\Application\Commands\Register\RegisterHandler;
 use Domains\User\Application\Commands\Update\UpdateUserHandler;
+use Domains\User\Application\Queries\FindByCredentials\FindUserByCredentialsHandler;
 use Domains\User\Application\Queries\FindById\FindUserByIdHandler;
 use Domains\User\Application\Queries\ListAll\ListUsersHandler;
 use Domains\User\Application\Repositories\UserRepositoryInterface;
@@ -29,7 +29,7 @@ class UserServiceProvider extends ServiceProvider
         $this->app->bind(DeleteUserHandler::class);
         $this->app->bind(ListUsersHandler::class);
         $this->app->bind(FindUserByIdHandler::class);
-        $this->app->bind(LoginHandler::class);
+        $this->app->bind(FindUserByCredentialsHandler::class);
         $this->app->bind(LogoutHandler::class);
         $this->app->bind(RegisterHandler::class);
 

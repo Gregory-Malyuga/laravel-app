@@ -2,8 +2,8 @@
 
 namespace Domains\User\Tests\Unit;
 
-use Domains\User\Application\Commands\Login\LoginCommand;
-use Domains\User\Application\Commands\Login\LoginHandler;
+use Domains\User\Application\Queries\FindByCredentials\FindUserByCredentialsHandler;
+use Domains\User\Application\Queries\FindByCredentials\FindUserByCredentialsQuery;
 use Domains\User\Application\Repositories\UserRepositoryInterface;
 use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Exceptions\InvalidCredentialsException;
@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Foundation\Testing\TestCase;
 use Illuminate\Support\Facades\Hash;
 
-class LoginHandlerTest extends TestCase
+class FindUserByCredentialsHandlerTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -24,8 +24,8 @@ class LoginHandlerTest extends TestCase
             'role' => UserRole::Admin,
         ]);
 
-        $handler = new LoginHandler(app(UserRepositoryInterface::class));
-        $result = $handler->handle(new LoginCommand('admin@test.com', 'secret'));
+        $handler = new FindUserByCredentialsHandler(app(UserRepositoryInterface::class));
+        $result = $handler->handle(new FindUserByCredentialsQuery('admin@test.com', 'secret'));
 
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals($user->id, $result->id);
@@ -41,15 +41,15 @@ class LoginHandlerTest extends TestCase
 
         $this->expectException(InvalidCredentialsException::class);
 
-        $handler = new LoginHandler(app(UserRepositoryInterface::class));
-        $handler->handle(new LoginCommand('admin@test.com', 'wrong'));
+        $handler = new FindUserByCredentialsHandler(app(UserRepositoryInterface::class));
+        $handler->handle(new FindUserByCredentialsQuery('admin@test.com', 'wrong'));
     }
 
     public function test_throws_invalid_credentials_for_unknown_email(): void
     {
         $this->expectException(InvalidCredentialsException::class);
 
-        $handler = new LoginHandler(app(UserRepositoryInterface::class));
-        $handler->handle(new LoginCommand('nobody@test.com', 'anything'));
+        $handler = new FindUserByCredentialsHandler(app(UserRepositoryInterface::class));
+        $handler->handle(new FindUserByCredentialsQuery('nobody@test.com', 'anything'));
     }
 }

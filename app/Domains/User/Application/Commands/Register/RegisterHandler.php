@@ -7,9 +7,9 @@ use Domains\User\Domain\Enums\UserRole;
 use Domains\User\Domain\Events\UserCreated;
 use Domains\User\Domain\Models\User;
 use Illuminate\Support\Facades\Hash;
-use Shared\Bus\HandlerInterface;
+use Shared\Bus\CommandHandlerInterface;
 
-readonly class RegisterHandler implements HandlerInterface
+readonly class RegisterHandler implements CommandHandlerInterface
 {
     public function __construct(private UserRepositoryInterface $repository) {}
 
