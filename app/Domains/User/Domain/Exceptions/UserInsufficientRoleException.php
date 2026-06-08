@@ -8,16 +8,16 @@ class UserInsufficientRoleException extends RuntimeException
 {
     public static function cannotAssignRole(string $role): self
     {
-        return new self("Insufficient role to assign role: {$role}");
+        return new self("Недостаточно прав для назначения роли: {$role}");
     }
 
     public static function cannotDeleteAdmin(): self
     {
-        return new self('Insufficient role to delete an admin user');
+        return new self('Недостаточно прав для удаления администратора');
     }
 
     public static function cannotManageUser(): self
     {
-        return new self('Insufficient role to manage this user');
+        return new self('Недостаточно прав для управления этим пользователем');
     }
 }

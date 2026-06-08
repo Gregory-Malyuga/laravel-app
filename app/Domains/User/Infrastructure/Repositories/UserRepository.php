@@ -4,6 +4,7 @@ namespace Domains\User\Infrastructure\Repositories;
 
 use Domains\User\Application\Data\UserFilterData;
 use Domains\User\Application\Repositories\UserRepositoryInterface;
+use Domains\User\Domain\Exceptions\UserNotFoundException;
 use Domains\User\Domain\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,8 @@ class UserRepository extends BaseRepository implements ElasticsearchSearchable, 
     use InteractsWithElasticsearch;
 
     protected string $model = User::class;
+
+    protected string $notFoundException = UserNotFoundException::class;
 
     /** @var array<string, class-string<FilterInterface>> */
     protected array $filterMap = [

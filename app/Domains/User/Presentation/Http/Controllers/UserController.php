@@ -13,6 +13,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\Rule;
 use Shared\Bus\CommandBusInterface;
 use Shared\Bus\QueryBusInterface;
 use Spatie\LaravelData\PaginatedDataCollection;
@@ -44,7 +45,7 @@ class UserController extends Controller
     {
         $request->validate([
             'password' => ['required', 'string', 'min:8'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => [Rule::unique('users')],
         ]);
 
         $dto = UserData::from($request);
@@ -66,6 +67,10 @@ class UserController extends Controller
 
     public function update(int $id, Request $request): JsonResponse
     {
+        $request->validate([
+            'email' => [Rule::unique('users')->ignore($id)],
+        ]);
+
         $dto = UserData::from($request);
 
         /** @var User|null $actor */

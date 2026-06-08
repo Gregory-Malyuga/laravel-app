@@ -2,12 +2,12 @@
 
 namespace Domains\User\Domain\Exceptions;
 
-use RuntimeException;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-class UserNotFoundException extends RuntimeException
+class UserNotFoundException extends ModelNotFoundException
 {
     public static function forId(int|string $id): self
     {
-        return new self("User not found: {$id}");
+        return new self('Пользователь с таким идентификатором не найден');
     }
 }

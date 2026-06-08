@@ -5,7 +5,7 @@ namespace Domains\User\Application\Commands\Logout;
 use Laravel\Sanctum\PersonalAccessToken;
 use Shared\Bus\HandlerInterface;
 
-class LogoutHandler implements HandlerInterface
+readonly class LogoutHandler implements HandlerInterface
 {
     public function handle(object $message): null
     {

@@ -79,6 +79,49 @@ class UserApiTest extends BaseApiTest
         $this->assertGreaterThanOrEqual($data[1]['id'] ?? 0, $data[0]['id']);
     }
 
+    public function test_update_returns_updated_data(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->putJson("/api/v1/users/{$user->id}", [
+            'name' => 'Updated Name',
+            'email' => 'changed@example.com',
+            'role' => 'manager',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('name', 'Updated Name')
+            ->assertJsonPath('email', 'changed@example.com')
+            ->assertJsonPath('role', 'manager');
+    }
+
+    public function test_update_allows_keeping_own_email(): void
+    {
+        $user = User::factory()->create(['email' => 'keep@example.com', 'role' => 'user']);
+
+        $response = $this->putJson("/api/v1/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => 'keep@example.com',
+            'role' => 'user',
+        ]);
+
+        $response->assertStatus(200);
+    }
+
+    public function test_update_rejects_duplicate_email(): void
+    {
+        User::factory()->create(['email' => 'taken@example.com']);
+        $user = User::factory()->create(['email' => 'mine@example.com', 'role' => 'user']);
+
+        $response = $this->putJson("/api/v1/users/{$user->id}", [
+            'name' => $user->name,
+            'email' => 'taken@example.com',
+            'role' => 'user',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors(['email']);
+    }
+
     public function test_index_filters_by_name(): void
     {
         User::factory()->create(['name' => 'Alice Admin', 'email' => 'alice2@example.com']);

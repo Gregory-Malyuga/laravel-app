@@ -3,6 +3,7 @@
 use Domains\User\Domain\Exceptions\InvalidCredentialsException;
 use Domains\User\Domain\Exceptions\UserForbiddenException;
 use Domains\User\Domain\Exceptions\UserInsufficientRoleException;
+use Domains\User\Domain\Exceptions\UserNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -33,8 +34,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (UserForbiddenException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
         });
+        $exceptions->render(function (UserNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        });
     })->create();
-
-$app->useAppPath(dirname(__DIR__).'/app/App');
 
 return $app;

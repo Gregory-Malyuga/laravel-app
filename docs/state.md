@@ -4,15 +4,16 @@
 
 ## Now
 
-В процессе: приведение Auth домена к стандартной структуре — контроллеры перенесены из `Auth/Http/` в `Auth/Presentation/Http/` (staged), правки в контроллерах и `routes/api.php` (unstaged). Deptrac не покрывал старый путь, после коммита Auth попадёт в `PresentationLayer`.
+Незакоммиченные изменения в User домене и Shared. Качество-гейт проходит (Pint, PHPStan level 8, Deptrac, тесты зелёные).
 
 ## Recent decisions
 
-- **`MakeDomainCommand::formatGenerated()` пропускает Pint в `testing`** — каждый тест запускал `exec(pint ...)` через PHP-процесс, давая ~3-8s потерь на тест. Guard `app()->environment('testing')` устраняет лишний fork без влияния на реальную генерацию.
-- **`LaravelCommandBus/QueryBusTest` → `PHPUnit\Framework\TestCase`** — тесты не используют `$this->app`, но платили ~2.9s за cold boot Laravel. Прямое наследование от PHPUnit устраняет boot полностью.
-- **`MakeDomainCommandTest::setUp()` чистит артефакты** — добавлен `cleanupStubGenArtifacts()` в setUp, чтобы тест был идемпотентен при повторных запусках и не зависел от tearDown предыдущей сессии.
-- **GitHub Actions CI** — добавлен `.github/workflows/ci.yml`: lint (×4) → analyze (phpstan + deptrac) → test (postgres + redis + elasticsearch) → build (prod image → ghcr.io) → trivy (fs + image) → smoke → release. Vendor передаётся через артефакт; образ тегируется SHA + ref_name, lowercase через `tr`.
-- **`routes/api.php` очищен** — удалены маршруты `StubGen`-домена, который никогда не был создан; баг поймал smoke-тест.
+- **`UserRepositoryInterface` в Application слое** — ports & adapters: интерфейс в `Application/Repositories/`, реализация в `Infrastructure/Repositories/`. Все 7 handlers переведены на интерфейс. Deptrac обновлён: `ApplicationLayer` больше не может импортировать Infrastructure напрямую.
+- **Auth домен упразднён, влит в User** — `Auth` не имел собственной сущности; контроллеры, команды, handlers и DTOs перенесены в `Domains/User`. `AuthServiceProvider` слит с `UserServiceProvider`.
+- **`LogoutHandler` через `PersonalAccessToken::whereKey()->delete()`** — прямой query без загрузки модели; обход PHP 8.5-бага с `void` vs `mixed` return type в `HandlerInterface`.
+- **`unique:users,email` только в create-сценарии** — убран из `UserData::rules()` (общий DTO для create+update), добавлен в `UserController::store()` через `$request->validate()`. `Rule::unique()->ignore($id)` нужен для update — открытый пункт.
+- **`UpdateUserHandler` захватывает return `update()`** — `BaseRepository::update()` возвращает `$model->fresh()`; теперь событие и ответ содержат актуальные данные.
+- **`SortData` — вайтлист колонок в домене** — `SortData::fromRequest()` не принимает `allowedSortColumns`; валидация `sort` поля через `array_merge(SortData::rules(), ['sort' => Rule::in(SORTABLE)])` в `ListUsersQuery::fromRequest()`.
 
 ## Last updated
 
