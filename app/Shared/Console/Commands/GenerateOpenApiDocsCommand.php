@@ -96,18 +96,30 @@ class GenerateOpenApiDocsCommand extends Command
         $controllerFqcn = $controllerNs.'\\'.$domainName.'Controller';
         $baseNs = (string) preg_replace('/\\\\Presentation\\\\Http\\\\Controllers$/', '', $controllerNs);
 
-        $dataFqcn = $this->resolveImport($controllerSrc, $domainName.'Data')
-            ?? $baseNs.'\\Application\\Data\\'.$domainName.'Data';
+        $dataBase = $baseNs.'\\Application\\Data\\';
+        $legacyFqcn = $this->resolveImport($controllerSrc, $domainName.'Data')
+            ?? ($this->safeClassExists($dataBase.$domainName.'Data') ? $dataBase.$domainName.'Data' : null);
 
-        if (! class_exists($dataFqcn)) {
-            $this->warn("  Data class not found: {$dataFqcn}");
+        $resourceFqcn = $this->resolveImport($controllerSrc, $domainName.'Resource')
+            ?? ($this->safeClassExists($dataBase.$domainName.'Resource') ? $dataBase.$domainName.'Resource' : $legacyFqcn);
+
+        $createFqcn = $this->resolveImport($controllerSrc, 'Create'.$domainName.'Data')
+            ?? ($this->safeClassExists($dataBase.'Create'.$domainName.'Data') ? $dataBase.'Create'.$domainName.'Data' : $legacyFqcn);
+
+        $updateFqcn = $this->resolveImport($controllerSrc, 'Update'.$domainName.'Data')
+            ?? ($this->safeClassExists($dataBase.'Update'.$domainName.'Data') ? $dataBase.'Update'.$domainName.'Data' : $legacyFqcn);
+
+        if ($resourceFqcn === null || ! $this->safeClassExists($resourceFqcn)) {
+            $this->warn("  Resource/Data class not found for {$domainName}");
 
             return;
         }
 
-        $filterFqcn = $baseNs.'\\Application\\Data\\'.$domainName.'FilterData';
-        $dataProps = $this->reflectConstructorParams($dataFqcn);
-        $filterProps = class_exists($filterFqcn) ? $this->reflectConstructorParams($filterFqcn) : [];
+        $filterFqcn = $dataBase.$domainName.'FilterData';
+        $resourceProps = $this->reflectConstructorParams($resourceFqcn);
+        $createProps = $createFqcn && $this->safeClassExists($createFqcn) ? $this->reflectConstructorParams($createFqcn) : $resourceProps;
+        $updateProps = $updateFqcn && $this->safeClassExists($updateFqcn) ? $this->reflectConstructorParams($updateFqcn) : $resourceProps;
+        $filterProps = $this->safeClassExists($filterFqcn) ? $this->reflectConstructorParams($filterFqcn) : [];
 
         $prefix = $this->resolveRoutePrefix($controllerFqcn);
         $resource = Str::kebab(Str::plural($domainName));
@@ -119,7 +131,7 @@ class GenerateOpenApiDocsCommand extends Command
         }
 
         $openApiNs = $baseNs.'\\Presentation\\Http\\OpenApi';
-        $content = $this->buildOpenApiFile($domainName, $openApiNs, $routePrefix, $dataProps, $filterProps);
+        $content = $this->buildOpenApiFile($domainName, $openApiNs, $routePrefix, $resourceProps, $createProps, $updateProps, $filterProps);
         $outputPath = "{$domainPath}/Presentation/Http/OpenApi/{$domainName}OpenApi.php";
 
         if ($this->option('dry-run')) {
@@ -217,23 +229,28 @@ class GenerateOpenApiDocsCommand extends Command
     // ── Code generation ────────────────────────────────────────────────────────
 
     /**
-     * @param  list<array{name: string, phpType: string, nullable: bool, hasDefault: bool}>  $dataProps
+     * @param  list<array{name: string, phpType: string, nullable: bool, hasDefault: bool}>  $resourceProps
+     * @param  list<array{name: string, phpType: string, nullable: bool, hasDefault: bool}>  $createProps
+     * @param  list<array{name: string, phpType: string, nullable: bool, hasDefault: bool}>  $updateProps
      * @param  list<array{name: string, phpType: string, nullable: bool, hasDefault: bool}>  $filterProps
      */
     private function buildOpenApiFile(
         string $name,
         string $ns,
         string $routePrefix,
-        array $dataProps,
+        array $resourceProps,
+        array $createProps,
+        array $updateProps,
         array $filterProps,
     ): string {
         $tag = Str::plural($name);
-        $schemaProps = $this->renderSchemaProps($dataProps);
+        $schemaProps = $this->renderSchemaProps($resourceProps);
         $filterParams = $this->renderFilterParams($filterProps);
-        $bodyProps = $this->renderBodyProps($dataProps);
-        $bodyRequired = $this->renderRequiredList($dataProps);
-        $postBody = $this->renderRequestBody($bodyProps, $bodyRequired, required: true);
-        $putBody = $this->renderRequestBody($bodyProps, '', required: false);
+        $postBodyProps = $this->renderBodyProps($createProps);
+        $postBodyRequired = $this->renderRequiredList($createProps);
+        $putBodyProps = $this->renderBodyProps($updateProps);
+        $postBody = $this->renderRequestBody($postBodyProps, $postBodyRequired, required: true);
+        $putBody = $this->renderRequestBody($putBodyProps, '', required: false);
         $security = "    security: [['bearerAuth' => []]],\n";
 
         $listPath = '/api/'.$routePrefix;
@@ -421,7 +438,7 @@ class GenerateOpenApiDocsCommand extends Command
 
     private function isDataClass(string $phpType): bool
     {
-        return class_exists($phpType) && is_subclass_of($phpType, Data::class);
+        return $this->safeClassExists($phpType) && is_subclass_of($phpType, Data::class);
     }
 
     private function renderNestedObjectProperty(string $name, string $phpType, bool $nullable): string
@@ -513,6 +530,15 @@ class GenerateOpenApiDocsCommand extends Command
         }
 
         return $extras;
+    }
+
+    private function safeClassExists(string $fqcn): bool
+    {
+        try {
+            return class_exists($fqcn);
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     // ── PHP parsing helpers ────────────────────────────────────────────────────
