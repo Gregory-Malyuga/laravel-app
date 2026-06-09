@@ -17,7 +17,9 @@ use Domains\User\Domain\Events\UserUpdated;
 use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchIndexer;
 use Domains\User\Infrastructure\Elasticsearch\UserElasticsearchSyncListener;
 use Domains\User\Infrastructure\Repositories\UserRepository;
+use Domains\User\Presentation\Http\Middleware\EnsureUserIsVerified;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class UserServiceProvider extends ServiceProvider
@@ -37,6 +39,8 @@ class UserServiceProvider extends ServiceProvider
 
         $this->app->bind(UserElasticsearchIndexer::class);
         $this->app->tag([UserElasticsearchIndexer::class], ['es-indexers']);
+
+        Route::aliasMiddleware('user.verified', EnsureUserIsVerified::class);
     }
 
     public function boot(): void

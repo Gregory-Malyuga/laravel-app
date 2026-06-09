@@ -12,6 +12,6 @@ Route::prefix('auth')->group(function (): void {
     Route::post('/logout', LogoutController::class)->middleware('auth:sanctum')->name('auth.logout');
 });
 
-Route::prefix('v1')->middleware('auth:sanctum')->group(function (): void {
+Route::prefix('v1')->middleware(['auth:sanctum', 'user.verified'])->group(function (): void {
     Route::apiResource('users', UserController::class);
 });

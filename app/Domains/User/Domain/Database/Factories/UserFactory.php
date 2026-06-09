@@ -3,6 +3,7 @@
 namespace Domains\User\Domain\Database\Factories;
 
 use Domains\User\Domain\Enums\UserRole;
+use Domains\User\Domain\Enums\UserStatus;
 use Domains\User\Domain\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +22,17 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => fake()->password(8),
             'role' => fake()->randomElement(array_column(UserRole::cases(), 'value')),
+            'status' => UserStatus::Pending,
         ];
+    }
+
+    public function verified(): static
+    {
+        return $this->state([' ' => UserStatus::Verify]);
+    }
+
+    public function banned(): static
+    {
+        return $this->state(['status' => UserStatus::Banned]);
     }
 }

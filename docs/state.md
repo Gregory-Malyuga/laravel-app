@@ -4,8 +4,11 @@
 
 ## Now
 
-Рефакторинг завершён. Pre-push gate чист: lint, pint, phpstan level 8, deptrac, docs:check, тесты (124 passed, 27 skipped).
-Незакоммиченные изменения накоплены за сессию — коммит отложен явно.
+Добавлен `UserStatus` enum и миграция. Незакоммиченные изменения — коммит отложен явно.
+
+- `app/Domains/User/Domain/Enums/UserStatus.php` — новый enum (`verify`, `pending`, `banned`)
+- `database/migrations/2026_06_09_000001_add_status_to_users_table.php` — колонка `status enum` в `users`, дефолт `pending`
+- `app/Domains/User/Domain/Models/User.php` — `@property UserStatus $status`, каст, добавлен в `$hidden`
 
 ## Аудит 2026-06-08 — итог
 
@@ -42,7 +45,7 @@
 
 ## Last updated
 
-2026-06-08
+2026-06-09
 
 ## Last commit
 
