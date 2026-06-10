@@ -28,7 +28,7 @@ class UserFactory extends Factory
 
     public function verified(): static
     {
-        return $this->state([' ' => UserStatus::Verify]);
+        return $this->state(['status' => UserStatus::Verify]);
     }
 
     public function banned(): static
