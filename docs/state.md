@@ -4,11 +4,15 @@
 
 ## Now
 
-Добавлен `UserStatus` enum и миграция. Незакоммиченные изменения — коммит отложен явно.
+Добавлен SMTP-сервер (Mailpit) в docker-compose и CI. Незакоммиченные изменения — коммит отложен явно.
 
-- `app/Domains/User/Domain/Enums/UserStatus.php` — новый enum (`verify`, `pending`, `banned`)
-- `database/migrations/2026_06_09_000001_add_status_to_users_table.php` — колонка `status enum` в `users`, дефолт `pending`
-- `app/Domains/User/Domain/Models/User.php` — `@property UserStatus $status`, каст, добавлен в `$hidden`
+- `docker-compose.yml` — сервис `mailpit` (SMTP 1025, UI 8025), `MAIL_*` env в `x-php-env`, зависимость в `x-php-depends`
+- `.github/workflows/ci.yml` — service `mailpit` в джобе `test`, `MAIL_*` env
+
+Предыдущий незакоммиченный блок (`UserStatus` enum) также остаётся в незакоммиченном состоянии:
+- `app/Domains/User/Domain/Enums/UserStatus.php`
+- `database/migrations/2026_06_09_000001_add_status_to_users_table.php`
+- `app/Domains/User/Domain/Models/User.php`
 
 ## Аудит 2026-06-08 — итог
 
@@ -45,7 +49,7 @@
 
 ## Last updated
 
-2026-06-09
+2026-06-10
 
 ## Last commit
 

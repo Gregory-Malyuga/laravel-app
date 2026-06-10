@@ -17,6 +17,14 @@ x-php-env: &php-env
   DB_DATABASE: laravel-database
   DB_USERNAME: laravel-database-user
   DB_PASSWORD: laravel-database-secret
+  MAIL_MAILER: smtp
+  MAIL_SCHEME: null
+  MAIL_HOST: mailpit
+  MAIL_PORT: "1025"
+  MAIL_USERNAME: null
+  MAIL_PASSWORD: null
+  MAIL_FROM_ADDRESS: hello@example.com
+  MAIL_FROM_NAME: Laravel
 
 x-php-depends: &php-depends
   redis:
@@ -24,6 +32,8 @@ x-php-depends: &php-depends
   elasticsearch:
     condition: service_healthy
   postgres:
+    condition: service_healthy
+  mailpit:
     condition: service_healthy
 
 x-php-build: &php-build
@@ -125,6 +135,18 @@ services:
       retries: 20
     volumes:
       - postgres_data:/var/lib/postgresql
+    networks:
+      - backend
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     networks:
       - backend
 
