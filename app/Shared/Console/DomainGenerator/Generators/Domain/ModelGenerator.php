@@ -3,8 +3,8 @@
 namespace Shared\Console\DomainGenerator\Generators\Domain;
 
 use Illuminate\Filesystem\Filesystem;
-use Shared\Console\DomainGenerator\Contracts\AbstractGenerator;
 use Shared\Console\DomainGenerator\Context\DomainContext;
+use Shared\Console\DomainGenerator\Contracts\AbstractGenerator;
 
 class ModelGenerator extends AbstractGenerator
 {
