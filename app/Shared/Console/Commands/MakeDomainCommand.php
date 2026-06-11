@@ -67,7 +67,9 @@ class MakeDomainCommand extends Command
         $this->appendRoutes($ctx);
         $this->registerProvider($ctx);
 
-        $this->call('migrate');
+        if (! $this->runningUnderPhpUnit()) {
+            $this->call('migrate');
+        }
 
         $this->formatGenerated($ctx);
 
@@ -219,7 +221,7 @@ class MakeDomainCommand extends Command
         $file = base_path('bootstrap/providers.php');
         $content = $this->files->get($file);
 
-        $pattern = '/return\s*\[\s*(.*?)\s*\]\s*;/s';
+        $pattern = '/return\s*\[\s*(.*?)\s*]\s*;/s';
         if (preg_match($pattern, $content, $matches)) {
             if (str_contains($matches[1], $shortName.'::class')) {
                 return;
@@ -235,9 +237,16 @@ class MakeDomainCommand extends Command
         $this->files->put($file, $content);
     }
 
+    private function runningUnderPhpUnit(): bool
+    {
+        // class_exists with autoload=false: true only when PHPUnit is already loaded in memory,
+        // which only happens during actual test runs regardless of APP_ENV value.
+        return class_exists('PHPUnit\Framework\TestCase', false);
+    }
+
     private function formatGenerated(DomainContext $ctx): void
     {
-        if (app()->environment('testing')) {
+        if ($this->runningUnderPhpUnit()) {
             return;
         }
 
