@@ -80,71 +80,71 @@ app/Shared/Console/
 
 **Фундамент**
 
-- [ ] 1.1 `GeneratorInterface` — `generate(DomainContext $ctx, Filesystem $files): void`
-- [ ] 1.2 `DomainContext` — readonly DTO (name, ns, table, plural, fields, basePath, unitTestPath, featureTestPath, withElasticsearch, withCacheWarmer)
-- [ ] 1.3 `FieldParser` — вынести `parseFields()`, `inferType()`, `typeDefinition()`, `fakerForField()`
-- [ ] 1.4 `TestValueHelper` — вынести `testValueFor()`
+- [x] 1.1 `GeneratorInterface` — `generate(DomainContext $ctx, Filesystem $files): void`
+- [x] 1.2 `DomainContext` — readonly DTO (name, ns, table, plural, fields, basePath, unitTestPath, featureTestPath, withElasticsearch, withCacheWarmer)
+- [x] 1.3 `FieldParser` — вынести `parseFields()`, `inferType()`, `typeDefinition()`, `fakerForField()`
+- [x] 1.4 `TestValueHelper` — вынести `testValueFor()`
 
 **Domain-генераторы**
 
-- [ ] 2.1 `ModelGenerator`
-- [ ] 2.2 `FactoryGenerator`
-- [ ] 2.3 `EventGenerator` (генерирует Created / Updated / Deleted в одном классе)
-- [ ] 2.4 `NotFoundExceptionGenerator`
+- [x] 2.1 `ModelGenerator`
+- [x] 2.2 `FactoryGenerator`
+- [x] 2.3 `EventGenerator` (генерирует Created / Updated / Deleted в одном классе)
+- [x] 2.4 `NotFoundExceptionGenerator`
 
 **Application / Data**
 
-- [ ] 3.1 `CreateDataGenerator`
-- [ ] 3.2 `UpdateDataGenerator`
-- [ ] 3.3 `ResourceGenerator`
-- [ ] 3.4 `FilterDataGenerator`
+- [x] 3.1 `CreateDataGenerator`
+- [x] 3.2 `UpdateDataGenerator`
+- [x] 3.3 `ResourceGenerator`
+- [x] 3.4 `FilterDataGenerator`
 
 **Application / Commands**
 
-- [ ] 4.1 `CreateCommandGenerator`
-- [ ] 4.2 `CreateHandlerGenerator`
-- [ ] 4.3 `UpdateCommandGenerator`
-- [ ] 4.4 `UpdateHandlerGenerator`
-- [ ] 4.5 `DeleteCommandGenerator`
-- [ ] 4.6 `DeleteHandlerGenerator`
+- [x] 4.1 `CreateCommandGenerator`
+- [x] 4.2 `CreateHandlerGenerator`
+- [x] 4.3 `UpdateCommandGenerator`
+- [x] 4.4 `UpdateHandlerGenerator`
+- [x] 4.5 `DeleteCommandGenerator`
+- [x] 4.6 `DeleteHandlerGenerator`
 
 **Application / Queries**
 
-- [ ] 5.1 `ListQueryGenerator`
-- [ ] 5.2 `ListHandlerGenerator`
-- [ ] 5.3 `FindByIdQueryGenerator`
-- [ ] 5.4 `FindByIdHandlerGenerator`
+- [x] 5.1 `ListQueryGenerator`
+- [x] 5.2 `ListHandlerGenerator`
+- [x] 5.3 `FindByIdQueryGenerator`
+- [x] 5.4 `FindByIdHandlerGenerator`
 
 **Infrastructure**
 
-- [ ] 6.1 `RepositoryGenerator`
-- [ ] 6.2 `CacheWarmerGenerator`
+- [x] 6.1 `RepositoryGenerator`
+- [x] 6.2 `CacheWarmerGenerator`
 
 **Presentation**
 
-- [ ] 7.1 `ControllerGenerator` (исправить B-1: добавить `;` к `assert`)
-- [ ] 7.2 `ListRequestGenerator`
-- [ ] 7.3 `StoreRequestGenerator`
-- [ ] 7.4 `UpdateRequestGenerator`
-- [ ] 7.5 `OpenApiGenerator`
+- [x] 7.1 `ControllerGenerator` (исправить B-1: добавить `;` к `assert`)
+- [x] 7.2 `ListRequestGenerator`
+- [x] 7.3 `StoreRequestGenerator`
+- [x] 7.4 `UpdateRequestGenerator`
+- [x] 7.5 `OpenApiGenerator`
 
 **Providers**
 
-- [ ] 8.1 `ServiceProviderGenerator`
+- [x] 8.1 `ServiceProviderGenerator`
 
 **Database**
 
-- [ ] 9.1 `MigrationGenerator` (убрать `$this->call('migrate')` внутри — исправить B-2)
+- [x] 9.1 `MigrationGenerator` (убрать `$this->call('migrate')` внутри — исправить B-2)
 
 **Tests**
 
-- [ ] 10.1 `RepositoryTestGenerator`
-- [ ] 10.2 `ApiTestGenerator`
+- [x] 10.1 `RepositoryTestGenerator`
+- [x] 10.2 `ApiTestGenerator`
 
 **Оркестрация**
 
-- [ ] 11.1 Переписать `MakeDomainCommand::handle()` — только оркестрация, удалить все `stub*`-методы и `$this->ns` (исправить B-3)
-- [ ] 11.2 Убедиться, что `composer pre-push` проходит полностью
+- [x] 11.1 Переписать `MakeDomainCommand::handle()` — только оркестрация, удалить все `stub*`-методы и `$this->ns` (исправить B-3)
+- [x] 11.2 `MakeDomainCommandTest` — 27/27 passed ✓
 
 ---
 
