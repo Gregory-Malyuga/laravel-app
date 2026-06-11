@@ -839,7 +839,7 @@ class MakeDomainCommand extends Command
         class List{$name}sQuery extends ListEntityQuery
         {
             /** @var list<string> */
-            public const SORTABLE = ['id'];
+            public const array SORTABLE = ['id'];
         }
         PHP;
     }
@@ -1015,7 +1015,7 @@ class MakeDomainCommand extends Command
 
                 \$id = \$this->commands->dispatch(new Create{$name}Command(
         {$createArgs}        ));
-                assert(\$id !== null)
+                assert(\$id !== null);
 
                 /** @var {$name} \$record */
                 \$record = \$this->queries->ask(new Find{$name}ByIdQuery(\$id));
@@ -1060,7 +1060,7 @@ class MakeDomainCommand extends Command
 
         class List{$name}sRequest extends ListRequest
         {
-            protected const SORTABLE = List{$name}sQuery::SORTABLE;
+            protected const array SORTABLE = List{$name}sQuery::SORTABLE;
 
             public function toFilters(): {$name}FilterData
             {
