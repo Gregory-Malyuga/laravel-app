@@ -4,15 +4,26 @@
 
 ## Now
 
-Добавлен SMTP-сервер (Mailpit) в docker-compose и CI. Незакоммиченные изменения — коммит отложен явно.
+Начат рефакторинг `MakeDomainCommand`. Составлен план и обновлён роадмап. Реализация ещё не начата.
 
-- `docker-compose.yml` — сервис `mailpit` (SMTP 1025, UI 8025), `MAIL_*` env в `x-php-env`, зависимость в `x-php-depends`
-- `.github/workflows/ci.yml` — service `mailpit` в джобе `test`, `MAIL_*` env
+**Незакоммиченные изменения:**
+- `app/Shared/Console/Commands/MakeDomainCommand.php` — подготовительные правки (из предыдущих сессий)
+- `tests/Unit/Shared/Console/MakeDomainCommandTest.php` — тесты (из предыдущих сессий)
+- `docs/process/roadmap.md` — добавлен раздел рефакторинга генератора
 
-Предыдущий незакоммиченный блок (`UserStatus` enum) также остаётся в незакоммиченном состоянии:
+**Выявленные баги в текущем `MakeDomainCommand`:**
+- B-1: `assert($id !== null)` без `;` в `stubController()` (строка 1018) — сгенерированный контроллер не парсится
+- B-2: двойной вызов `$this->call('migrate')` — в `generateMigration()` и в `handle()`
+- B-3: `$this->ns` — mutable state, блокирует изолированное тестирование
+
+**Целевая структура:** `app/Shared/Console/DomainGenerator/` — см. roadmap.md.
+
+Предыдущий незакоммиченный блок (`UserStatus` enum, SMTP Mailpit) также остаётся:
 - `app/Domains/User/Domain/Enums/UserStatus.php`
 - `database/migrations/2026_06_09_000001_add_status_to_users_table.php`
 - `app/Domains/User/Domain/Models/User.php`
+- `docker-compose.yml` — сервис `mailpit`
+- `.github/workflows/ci.yml` — service `mailpit`
 
 ## Аудит 2026-06-08 — итог
 
@@ -49,7 +60,7 @@
 
 ## Last updated
 
-2026-06-10
+2026-06-11
 
 ## Last commit
 
