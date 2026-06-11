@@ -4,26 +4,17 @@
 
 ## Now
 
-Начат рефакторинг `MakeDomainCommand`. Составлен план и обновлён роадмап. Реализация ещё не начата.
+Рефакторинг `MakeDomainCommand` завершён и закоммичен.
 
 **Незакоммиченные изменения:**
-- `app/Shared/Console/Commands/MakeDomainCommand.php` — подготовительные правки (из предыдущих сессий)
-- `tests/Unit/Shared/Console/MakeDomainCommandTest.php` — тесты (из предыдущих сессий)
-- `docs/process/roadmap.md` — добавлен раздел рефакторинга генератора
-
-**Выявленные баги в текущем `MakeDomainCommand`:**
-- B-1: `assert($id !== null)` без `;` в `stubController()` (строка 1018) — сгенерированный контроллер не парсится
-- B-2: двойной вызов `$this->call('migrate')` — в `generateMigration()` и в `handle()`
-- B-3: `$this->ns` — mutable state, блокирует изолированное тестирование
-
-**Целевая структура:** `app/Shared/Console/DomainGenerator/` — см. roadmap.md.
-
-Предыдущий незакоммиченный блок (`UserStatus` enum, SMTP Mailpit) также остаётся:
 - `app/Domains/User/Domain/Enums/UserStatus.php`
 - `database/migrations/2026_06_09_000001_add_status_to_users_table.php`
 - `app/Domains/User/Domain/Models/User.php`
 - `docker-compose.yml` — сервис `mailpit`
 - `.github/workflows/ci.yml` — service `mailpit`
+- `app/Domains/User/Domain/Models/User.php` — phpdoc обновлён ide-helper
+
+Все коммиты рефакторинга в `main`. Все 26 шагов роадмапа выполнены.
 
 ## Аудит 2026-06-08 — итог
 
@@ -60,7 +51,7 @@
 
 ## Last updated
 
-2026-06-11
+2026-06-11 (рефакторинг MakeDomainCommand завершён)
 
 ## Last commit
 
