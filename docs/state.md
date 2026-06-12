@@ -4,17 +4,21 @@
 
 ## Now
 
-Рефакторинг `MakeDomainCommand` завершён и закоммичен.
+Оптимизация тест-сьюта: время с 174s → целевые ≤50s.
 
 **Незакоммиченные изменения:**
-- `app/Domains/User/Domain/Enums/UserStatus.php`
-- `database/migrations/2026_06_09_000001_add_status_to_users_table.php`
-- `app/Domains/User/Domain/Models/User.php`
-- `docker-compose.yml` — сервис `mailpit`
-- `.github/workflows/ci.yml` — service `mailpit`
-- `app/Domains/User/Domain/Models/User.php` — phpdoc обновлён ide-helper
+- `app/Shared/Console/Commands/MakeDomainCommand.php` — два guard-а `PHPUNIT_RUNNING`: пропуск `migrate` и `formatGenerated` (exec Pint) в тестах
+- `phpunit.xml` — добавлена `PHPUNIT_RUNNING=1` env var
+- `tests/Unit/Shared/Console/MakeDomainCommandTest.php` — bootstrap-оптимизация: 17 shared-тестов используют один make:domain call; `$migrationRan` флаг вместо `Schema::hasTable` в cleanup; `tearDownAfterClass` для финального restore
+- `bootstrap/providers.php` — незначительные изменения (возможные side-effects от тестов)
+- `routes/api.php` — аналогично
+- `app/Domains/User/*`, `docker-compose.yml`, `.github/workflows/ci.yml` — из предыдущей сессии (UserStatus, mailpit)
 
-Все коммиты рефакторинга в `main`. Все 26 шагов роадмапа выполнены.
+**Удалён:** `tests/Unit/Shared/Console/BenchmarkTest.php` (временный профайлинг-файл).
+
+**Текущий статус:** изменения не закоммичены. Docker не запущен — тесты не прогнаны.
+
+`bootstrap/providers.php` и `routes/api.php` вручную очищены от мусора (StubGroup, BenchGen).
 
 ## Аудит 2026-06-08 — итог
 
@@ -51,7 +55,7 @@
 
 ## Last updated
 
-2026-06-11 (рефакторинг MakeDomainCommand завершён)
+2026-06-12 (полное ревью рефактора MakeDomainCommand: 15 находок → roadmap R-1..R-15)
 
 ## Last commit
 
