@@ -148,6 +148,50 @@ app/Shared/Console/
 
 ---
 
+### Стабилизация тест-инфраструктуры MakeDomainCommand (2026-06-12)
+
+Аудит пяти экспертов (DevOps, System Architect, Senior PHP, PHPUnit Expert, System Designer).  
+Блок 27 тестов сейчас ~5 с на ParaTest 2-CPU; constraint ≤ 15 с выполнен.  
+Задачи ниже устраняют fragility и silent failures.
+
+#### TODO
+
+- [ ] **T-1** `MakeDomainCommandTest.php` — small · **приоритет 1**  
+  Заменить хардкод `'v1\/stub-isos'` в `removeFromGlobalFiles()` на  
+  `Str::kebab(Str::plural(static::$domainName))`.  
+  Без этого tearDown — silent no-op при переименовании домена → routes накапливаются → нон-детерминированные падения SharedTest.
+
+- [ ] **T-2** `phpunit.xml` — small · **приоритет 2**  
+  Добавить `<testsuite name="DomainGen"><directory>tests/Unit/Shared/Console</directory></testsuite>`.  
+  Даёт изолированный запуск 27 тестов для проверки ≤ 15 с constraint; гарантирует чистое распределение воркеров.
+
+- [ ] **T-3** `MakeDomainCommandSharedTest.php` — medium · **приоритет 3**  
+  Перевести bootstrap домена с `static $domainReady` + guard в `setUp()` на `setUpBeforeClass()`.  
+  Использовать `Artisan::call('make:domain ' . static::$domainName)`.  
+  Убрать `static bool $domainReady`. Закрывает race-window между snapshot Worker-B и restore Worker-A.
+
+- [ ] **T-4** `MakeDomainCommandTest.php` — small · **приоритет 4**  
+  Убрать лишние второй artisan-вызов в двух тестах:  
+  — `test_skips_migration_if_already_exists`: один вызов + glob-count уже достаточно;  
+  — `test_provider_registration_is_idempotent`: `assertSame(1, substr_count(...))` доказывает idempotency без второго бута.  
+  *(`test_skips_existing_files_on_second_run` не трогать — там второй вызов семантически нужен.)*  
+  Экономия ~0.8 с P99 на Worker-B.
+
+- [ ] **T-5** `MakeDomainCommandTest.php` — small · **приоритет 5**  
+  Переименовать вложенный тестовый домен `StubGroup/StubGen` → `StubGroup/StubNested`.  
+  `StubGen` генерирует таблицу `stub_gens` — ту же что SharedTest; `finally`-блок делает  
+  `Schema::dropIfExists('stub_gens')` и может убить таблицу SharedTest на параллельном воркере.  
+  Обновить: `$nestedBase`, artisan-аргумент, assertions на `StubNested`, glob, `Schema::dropIfExists('stub_nesteds')`.
+
+#### Ожидаемое время после всех правок
+
+| Режим | До | После |
+|---|---|---|
+| Sequential | ~22 с | ~5.2 с |
+| ParaTest 2-CPU | ~5.2 с | ~4.0 с |
+
+---
+
 ### Post-refactor: баги и улучшения по ревью (2026-06-12)
 
 Полное ревью рефактора `MakeDomainCommand` выявило 15 находок. Сгруппированы по приоритету.
