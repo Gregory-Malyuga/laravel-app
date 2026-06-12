@@ -187,7 +187,7 @@ app/Shared/Console/
 - [x] **AI-7** `MakeDomainCommandTest.php` — `preg_quote` для `$routePrefix` в routes-regex ✓
 - [x] **AI-8** `StubGenTestCase.php` — убрать мёртвое `(?:Stub|Bench)` → `(?:Stub)` в stripTestArtifacts ✓
 - [x] **AI-9** `MakeDomainCommandTest.php` — `->middleware(...)` сделан опциональным (`(?:->middleware\([^)]*\))?`) в routes-regex removeFromGlobalFiles ✓
-- [ ] **AI-5** `MakeDomainCommandTest.php` — `test_nested_domain_uses_parent_namespace` использует snapshot-restore вместо хирургического удаления → потенциальный inter-worker pollution при параллельном прогоне (отложено)
+- [x] **AI-5** `MakeDomainCommandTest.php` — `test_nested_domain_uses_parent_namespace` переведён с snapshot-restore на хирургическое удаление StubNested-записей из routes/providers ✓
 
 #### Ожидаемое время после всех правок
 

@@ -167,11 +167,6 @@ class MakeDomainCommandTest extends StubGenTestCase
         $nestedBase = base_path('app/Domains/StubGroup/StubNested');
         $files = $this->files;
 
-        // Snapshot both files immediately before generation so the finally block restores
-        // exactly what this test found — not whatever setUp captured earlier.
-        $routesBefore = $files->get(base_path('routes/api.php'));
-        $providersBefore = $files->get(base_path('bootstrap/providers.php'));
-
         try {
             $this->artisan('make:domain StubGroup/StubNested')->assertSuccessful();
 
@@ -190,8 +185,21 @@ class MakeDomainCommandTest extends StubGenTestCase
                 $files->delete($f);
             }
             Schema::dropIfExists('stub_nesteds');
-            $files->put(base_path('routes/api.php'), $routesBefore);
-            $files->put(base_path('bootstrap/providers.php'), $providersBefore);
+
+            $routePrefix = preg_quote('v1/stub-group/stub-nesteds', '/');
+            $routesPath = base_path('routes/api.php');
+            $content = $files->get($routesPath);
+            $cleaned = preg_replace('/\n\nRoute::prefix\(\''.$routePrefix.'\'\)(?:->middleware\([^)]*\))?->group.*?\}\);/s', '', $content);
+            if ($cleaned !== null && $cleaned !== $content) {
+                $files->put($routesPath, $cleaned);
+            }
+
+            $providersPath = base_path('bootstrap/providers.php');
+            $content = $files->get($providersPath);
+            $cleaned = preg_replace('/^[ \t]+Domains\\\\StubGroup\\\\StubNested\\\\[^:]+::class,\n/m', '', $content);
+            if ($cleaned !== null && $cleaned !== $content) {
+                $files->put($providersPath, $cleaned);
+            }
         }
     }
 }
