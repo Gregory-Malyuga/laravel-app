@@ -17,11 +17,11 @@ class FindByIdHandlerGenerator extends AbstractGenerator
 
         use Shared\\Bus\\QueryHandlerInterface;
         use {$ctx->ns}\\Domain\\Models\\{$ctx->name};
-        use {$ctx->ns}\\Infrastructure\\Repositories\\{$ctx->name}Repository;
+        use {$ctx->ns}\\Application\\Repositories\\{$ctx->name}RepositoryInterface;
 
         readonly class Find{$ctx->name}ByIdHandler implements QueryHandlerInterface
         {
-            public function __construct(private readonly {$ctx->name}Repository \$repository) {}
+            public function __construct(private readonly {$ctx->name}RepositoryInterface \$repository) {}
 
             public function handle(object \$message): {$ctx->name}
             {

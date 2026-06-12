@@ -17,11 +17,11 @@ class DeleteHandlerGenerator extends AbstractGenerator
 
         use Shared\\Bus\\CommandHandlerInterface;
         use {$ctx->ns}\\Domain\\Events\\{$ctx->name}Deleted;
-        use {$ctx->ns}\\Infrastructure\\Repositories\\{$ctx->name}Repository;
+        use {$ctx->ns}\\Application\\Repositories\\{$ctx->name}RepositoryInterface;
 
         readonly class Delete{$ctx->name}Handler implements CommandHandlerInterface
         {
-            public function __construct(private {$ctx->name}Repository \$repository) {}
+            public function __construct(private {$ctx->name}RepositoryInterface \$repository) {}
 
             public function handle(object \$message): null
             {

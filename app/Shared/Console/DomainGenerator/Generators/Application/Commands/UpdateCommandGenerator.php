@@ -10,12 +10,18 @@ class UpdateCommandGenerator extends AbstractGenerator
 {
     public function generate(DomainContext $ctx, Filesystem $files): void
     {
-        $params = "        public int \$id,\n";
+        $required = "        public int \$id,\n";
+        $optional = '';
         foreach ($ctx->fields as $fieldName => $def) {
-            $phpType = $def['nullable'] ? "?{$def['phpType']}" : $def['phpType'];
-            $default = $def['nullable'] ? ' = null' : '';
-            $params .= "        public {$phpType} \${$fieldName}{$default},\n";
+            $docType = $def['phpType'] === 'array' ? 'array<string, mixed>'.($def['nullable'] ? '|null' : '') : null;
+            $docLine = $docType !== null ? "        /** @param {$docType} \${$fieldName} */\n" : '';
+            if ($def['nullable']) {
+                $optional .= $docLine."        public ?{$def['phpType']} \${$fieldName} = null,\n";
+            } else {
+                $required .= $docLine."        public {$def['phpType']} \${$fieldName},\n";
+            }
         }
+        $params = $required.$optional;
 
         $content = <<<PHP
         <?php

@@ -17,12 +17,12 @@ class ListHandlerGenerator extends AbstractGenerator
 
         use Shared\\Bus\\QueryHandlerInterface;
         use {$ctx->ns}\\Domain\\Models\\{$ctx->name};
-        use {$ctx->ns}\\Infrastructure\\Repositories\\{$ctx->name}Repository;
+        use {$ctx->ns}\\Application\\Repositories\\{$ctx->name}RepositoryInterface;
         use Illuminate\\Contracts\\Pagination\\LengthAwarePaginator;
 
         readonly class List{$ctx->name}sHandler implements QueryHandlerInterface
         {
-            public function __construct(private readonly {$ctx->name}Repository \$repository) {}
+            public function __construct(private readonly {$ctx->name}RepositoryInterface \$repository) {}
 
             /** @return LengthAwarePaginator<int, {$ctx->name}> */
             public function handle(object \$message): LengthAwarePaginator

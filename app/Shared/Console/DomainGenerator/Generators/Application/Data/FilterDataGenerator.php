@@ -12,7 +12,8 @@ class FilterDataGenerator extends AbstractGenerator
     {
         $props = '';
         foreach ($ctx->fields as $fieldName => $def) {
-            $props .= "        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
+            $docPrefix = $def['phpType'] === 'array' ? "        /** @var array<string, mixed>|null */\n" : '';
+            $props .= $docPrefix."        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
         }
 
         $content = <<<PHP

@@ -1,0 +1,53 @@
+<?php
+
+namespace Tests\Unit\Shared\Console;
+
+use Illuminate\Filesystem\Filesystem;
+use Tests\TestCase;
+
+abstract class StubGenTestCase extends TestCase
+{
+    protected Filesystem $files;
+
+    protected string $domainBase;
+
+    protected string $unitTestBase;
+
+    protected string $featureTestBase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->files = new Filesystem;
+        $this->domainBase = base_path('app/Domains/StubGen');
+        $this->unitTestBase = "{$this->domainBase}/Tests/Unit";
+        $this->featureTestBase = "{$this->domainBase}/Tests/Feature";
+    }
+
+    protected static function deleteDomainArtifacts(Filesystem $files): void
+    {
+        $files->deleteDirectory(base_path('app/Domains/StubGen'));
+
+        foreach ($files->glob(database_path('migrations/*_create_stub_gens_table.php')) as $f) {
+            $files->delete($f);
+        }
+    }
+
+    protected static function stripTestArtifacts(Filesystem $files): void
+    {
+        $providersPath = base_path('bootstrap/providers.php');
+        $content = $files->get($providersPath);
+        $cleaned = preg_replace('/^[ \t]+Domains\\\\(?:Stub|Bench)[^:]+::class,\n/m', '', $content);
+        if ($cleaned !== null && $cleaned !== $content) {
+            $files->put($providersPath, $cleaned);
+        }
+
+        $routesPath = base_path('routes/api.php');
+        $content = $files->get($routesPath);
+        $cleaned = preg_replace('/\n\nRoute::prefix\(\'v1\/(?:stub|bench)[^\']*\'\)(?:->middleware\([^)]*\))?->group.*?\}\);/s', '', $content);
+        if ($cleaned !== null && $cleaned !== $content) {
+            $files->put($routesPath, $cleaned);
+        }
+    }
+}

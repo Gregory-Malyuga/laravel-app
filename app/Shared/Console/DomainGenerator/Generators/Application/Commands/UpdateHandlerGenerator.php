@@ -23,11 +23,11 @@ class UpdateHandlerGenerator extends AbstractGenerator
         use Shared\\Bus\\CommandHandlerInterface;
         use {$ctx->ns}\\Domain\\Events\\{$ctx->name}Updated;
         use {$ctx->ns}\\Domain\\Models\\{$ctx->name};
-        use {$ctx->ns}\\Infrastructure\\Repositories\\{$ctx->name}Repository;
+        use {$ctx->ns}\\Application\\Repositories\\{$ctx->name}RepositoryInterface;
 
         readonly class Update{$ctx->name}Handler implements CommandHandlerInterface
         {
-            public function __construct(private {$ctx->name}Repository \$repository) {}
+            public function __construct(private {$ctx->name}RepositoryInterface \$repository) {}
 
             public function handle(object \$message): null
             {
@@ -35,8 +35,9 @@ class UpdateHandlerGenerator extends AbstractGenerator
 
                 /** @var {$ctx->name} \$record */
                 \$record = \$this->repository->findOrFail(\$message->id);
-                \$updated = \$this->repository->update(\$record, [
-        {$arrayItems}        ]);
+                \$data = array_filter([
+        {$arrayItems}        ], static fn (mixed \$v): bool => \$v !== null);
+                \$updated = \$this->repository->update(\$record, \$data);
 
                 {$ctx->name}Updated::dispatch(\$updated);
 

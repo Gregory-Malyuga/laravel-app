@@ -12,17 +12,22 @@ class MigrationGenerator extends AbstractGenerator
     {
         $existing = $files->glob(database_path("migrations/*_create_{$ctx->table}_table.php"));
         if (! empty($existing)) {
+            if ($this->outputFn !== null) {
+                ($this->outputFn)('skip', $existing[0]);
+            }
+
             return;
         }
 
         $columns = '';
         foreach ($ctx->fields as $fieldName => $def) {
+            $nullable = $def['nullable'] ? '->nullable()' : '';
             if ($def['migration'] === 'decimal') {
-                $columns .= "            \$table->decimal('{$fieldName}', 10, 2);\n";
+                $columns .= "            \$table->decimal('{$fieldName}', 10, 2){$nullable};\n";
             } elseif ($def['migration'] === 'string') {
-                $columns .= "            \$table->string('{$fieldName}');\n";
+                $columns .= "            \$table->string('{$fieldName}'){$nullable};\n";
             } else {
-                $columns .= "            \$table->{$def['migration']}('{$fieldName}');\n";
+                $columns .= "            \$table->{$def['migration']}('{$fieldName}'){$nullable};\n";
             }
         }
 
@@ -54,6 +59,6 @@ class MigrationGenerator extends AbstractGenerator
 
         $timestamp = now()->format('Y_m_d_His');
         $path = database_path("migrations/{$timestamp}_create_{$table}_table.php");
-        $files->put($path, $content);
+        $this->writeFile($files, $path, $content);
     }
 }

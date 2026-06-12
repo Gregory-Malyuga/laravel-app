@@ -93,8 +93,8 @@ class ApiTestGenerator extends AbstractGenerator
 
                 \$response->assertStatus(200);
                 \$data = \$response->json('data');
-                \$this->assertNotEmpty(\$data);
-                \$this->assertLessThanOrEqual(\$data[1]['id'] ?? PHP_INT_MAX, \$data[0]['id']);
+                \$this->assertGreaterThan(1, count(\$data), 'Expected at least 2 records in response');
+                \$this->assertLessThanOrEqual(\$data[1]['id'], \$data[0]['id']);
             }
 
             public function test_index_sorts_desc(): void
@@ -105,8 +105,8 @@ class ApiTestGenerator extends AbstractGenerator
 
                 \$response->assertStatus(200);
                 \$data = \$response->json('data');
-                \$this->assertNotEmpty(\$data);
-                \$this->assertGreaterThanOrEqual(\$data[1]['id'] ?? 0, \$data[0]['id']);
+                \$this->assertGreaterThan(1, count(\$data), 'Expected at least 2 records in response');
+                \$this->assertGreaterThanOrEqual(\$data[1]['id'], \$data[0]['id']);
             }
         {$filterTests}}
         PHP;

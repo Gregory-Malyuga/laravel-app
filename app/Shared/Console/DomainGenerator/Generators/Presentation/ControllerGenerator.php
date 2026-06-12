@@ -10,11 +10,9 @@ class ControllerGenerator extends AbstractGenerator
 {
     public function generate(DomainContext $ctx, Filesystem $files): void
     {
-        $createArgs = '';
-        $updateArgs = '';
+        $args = '';
         foreach ($ctx->fields as $fieldName => $def) {
-            $createArgs .= "                {$fieldName}: \$dto->{$fieldName},\n";
-            $updateArgs .= "                {$fieldName}: \$dto->{$fieldName},\n";
+            $args .= "                {$fieldName}: \$dto->{$fieldName},\n";
         }
 
         $content = <<<PHP
@@ -24,7 +22,7 @@ class ControllerGenerator extends AbstractGenerator
 
         use Illuminate\\Contracts\\Pagination\\LengthAwarePaginator;
         use Illuminate\\Http\\JsonResponse;
-        use Illuminate\\Http\\Request;
+
         use Illuminate\\Routing\\Controller;
         use Shared\\Bus\\CommandBusInterface;
         use Shared\\Bus\\QueryBusInterface;
@@ -73,9 +71,9 @@ class ControllerGenerator extends AbstractGenerator
             {
                 \$dto = Create{$ctx->name}Data::from(\$request);
 
+                /** @var int \$id */
                 \$id = \$this->commands->dispatch(new Create{$ctx->name}Command(
-        {$createArgs}        ));
-                assert(\$id !== null);
+        {$args}        ));
 
                 /** @var {$ctx->name} \$record */
                 \$record = \$this->queries->ask(new Find{$ctx->name}ByIdQuery(\$id));
@@ -89,7 +87,7 @@ class ControllerGenerator extends AbstractGenerator
 
                 \$this->commands->dispatch(new Update{$ctx->name}Command(
                     id: \$id,
-        {$updateArgs}        ));
+        {$args}        ));
 
                 /** @var {$ctx->name} \$record */
                 \$record = \$this->queries->ask(new Find{$ctx->name}ByIdQuery(\$id));
@@ -97,7 +95,7 @@ class ControllerGenerator extends AbstractGenerator
                 return response()->json({$ctx->name}Resource::from(\$record));
             }
 
-            public function destroy(int \$id, Request \$request): JsonResponse
+            public function destroy(int \$id): JsonResponse
             {
                 \$this->commands->dispatch(new Delete{$ctx->name}Command(\$id));
 

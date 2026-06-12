@@ -154,27 +154,27 @@ app/Shared/Console/
 
 #### Высокий приоритет — ломают генерируемый код
 
-- [ ] **R-1** `TestValueHelper::valueFor()` — нет ветки для `phpType='array'` → возвращает `'Test Meta'` вместо `[]` → тест с json-полем падает (RepositoryTestGenerator строка 21, ApiTestGenerator строка 29)
-- [ ] **R-2** `ControllerGenerator` — заменить `assert($id !== null)` на `throw new \RuntimeException(...)`: `zend.assertions=-1` в продакшене делает assert no-op, null проходит дальше в `FindByIdQuery`
-- [ ] **R-3** `MakeDomainCommand::appendRoutes()` — добавить проверку `if (! $this->files->exists($file)) return;` или создать файл: `files->get()` бросает `FileNotFoundException` если `routes/api.php` отсутствует
+- [x] **R-1** `TestValueHelper::valueFor()` — нет ветки для `phpType='array'` → возвращает `'Test Meta'` вместо `[]` → тест с json-полем падает ✓
+- [x] **R-2** `ControllerGenerator` — заменить `assert($id !== null)` на `throw new \RuntimeException(...)` ✓
+- [x] **R-3** `MakeDomainCommand::appendRoutes()` — добавить проверку `if (! $this->files->exists($file)) return;` ✓
 
 #### Средний приоритет — тихие неверные результаты
 
-- [ ] **R-4** `MakeDomainCommand::formatGenerated()` — заменить `preg_replace('/(?<=\w)([A-Z])/', '_$1', $ctx->name)` на `$ctx->table`: glob не найдёт миграции с нерегулярным множественным (Category→categories, Person→people) и с аббревиатурами (SKUItem→s_k_u_item vs skuitems)
-- [ ] **R-5** `ApiTestGenerator` — заменить `$data[1]['id'] ?? PHP_INT_MAX` / `?? 0` на явную проверку `assertGreaterThan(1, count($data))` перед sort-assertions: fallback делает тесты тривиально зелёными при одном элементе
-- [ ] **R-6** `MakeDomainCommand::registerProvider()` — заменить `str_contains($content, $shortName.'::class')` на `str_contains($content, $providerClass.'::class')` (полный FQCN): короткое имя `UserServiceProvider` является подстрокой `OldUserServiceProvider::class`
-- [ ] **R-7** `TestValueHelper::valueFor()` и `FieldParser::fakerForField()` — синхронизировать таблицы типов: `fakerForField` знает про `address/city/country/url/title/description`, `valueFor()` не знает → тест фильтрации по `city` генерирует две одинаковые записи `'Test City'` → `assertSame(1, total())` всегда падает
+- [x] **R-4** `MakeDomainCommand::formatGenerated()` — заменить regex на `$ctx->table` ✓
+- [x] **R-5** `ApiTestGenerator` — явная проверка `assertGreaterThan(1, count($data))` перед sort-assertions ✓
+- [x] **R-6** `MakeDomainCommand::registerProvider()` — использовать полный FQCN в `str_contains` ✓
+- [x] **R-7** `TestValueHelper::valueFor()` и `FieldParser::fakerForField()` — синхронизированы: добавлены ветки для `address/city/country/url/title/description` ✓
 
 #### Низкий приоритет — технический долг
 
-- [ ] **R-8** Вынести Elasticsearch-блок (`$esImports/$esInterface/$esTrait`) из `ModelGenerator` и `RepositoryGenerator` в protected-метод `AbstractGenerator` или отдельный трейт — 3 строки дублируются байт-в-байт
-- [ ] **R-9** `MigrationGenerator::generate()` — использовать `$this->writeFile()` вместо прямого `$files->put()`: единственный генератор, обходящий `AbstractGenerator::writeFile()` — dry-run и будущее логирование его не затронут
-- [ ] **R-10** `MakeDomainCommand::runningUnderPhpUnit()` — задокументировать или откатить семантическое расхождение с `app()->environment('testing')`: `class_exists('PHPUnit\Framework\TestCase', false)` ≠ `APP_ENV=testing`, меняет поведение migrate и pint в нестандартных окружениях
-- [ ] **R-11** Восстановить вывод команды: `AbstractGenerator::writeFile()`, `appendRoutes()`, `registerProvider()` — вернуть `warn()` при skip и `line()` при создании; сейчас повторный запуск `make:domain` молча не выдаёт ни одного сообщения о пропущенных файлах
-- [ ] **R-12** `MakeDomainCommand::registerProvider()` — заменить `str_replace('];', ...)` на regex-замену с якорем конца массива: текущий `str_replace` заменит все вхождения `];` в `bootstrap/providers.php` при наличии вложенных массивов
-- [ ] **R-13** `FieldParser::typeDefinition()` для `timestamp/datetime` — установить `nullable=true` или убедиться, что faker-значение совместимо с MySQL strict mode: `$table->timestamp()` NOT NULL + `fake()->dateTime()->format(...)` → `Incorrect datetime value` при включённом `STRICT_TRANS_TABLES`
-- [ ] **R-14** `ControllerGenerator` — объединить `$createArgs` и `$updateArgs` в одну переменную: оба цикла производят идентичный результат
-- [ ] **R-15** `MakeDomainCommand::createDirectories()` — захардкоженный список из 15 путей дублирует знание о структуре каждого генератора; при добавлении нового генератора нужно помнить про правку двух файлов
+- [x] **R-8** ES-блок вынесен в `AbstractGenerator::esImports/esInterface/esTrait()` ✓
+- [x] **R-9** `MigrationGenerator::generate()` — использует `$this->writeFile()` ✓
+- [x] **R-10** `MakeDomainCommand::runningUnderPhpUnit()` — задокументировано семантическое расхождение с `app()->environment('testing')` ✓
+- [x] **R-11** Вывод команды восстановлен: `writeFile()` логирует CREATE/SKIP через Closure, `appendRoutes()`/`registerProvider()` используют `line()`/`warn()` ✓
+- [x] **R-12** `MakeDomainCommand::registerProvider()` — `str_replace('];')` заменён на `strrpos()`-замену последнего вхождения ✓
+- [x] **R-13** `FieldParser::typeDefinition()` для `timestamp/datetime` — `nullable=true`, правило `'nullable'` добавлено; `MigrationGenerator` генерирует `->nullable()` для всех nullable-полей ✓
+- [x] **R-14** `ControllerGenerator` — `$createArgs`/`$updateArgs` объединены в `$args` ✓
+- [x] **R-15** `MakeDomainCommand::createDirectories()` удалён; `AbstractGenerator::writeFile()` сам вызывает `ensureDirectoryExists(dirname($path))` ✓
 
 ---
 

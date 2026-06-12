@@ -4,21 +4,18 @@
 
 ## Now
 
-Оптимизация тест-сьюта: время с 174s → целевые ≤50s.
+Реализованы R-1..R-15 из post-refactor ревью. Изменения не закоммичены.
 
-**Незакоммиченные изменения:**
-- `app/Shared/Console/Commands/MakeDomainCommand.php` — два guard-а `PHPUNIT_RUNNING`: пропуск `migrate` и `formatGenerated` (exec Pint) в тестах
-- `phpunit.xml` — добавлена `PHPUNIT_RUNNING=1` env var
-- `tests/Unit/Shared/Console/MakeDomainCommandTest.php` — bootstrap-оптимизация: 17 shared-тестов используют один make:domain call; `$migrationRan` флаг вместо `Schema::hasTable` в cleanup; `tearDownAfterClass` для финального restore
-- `bootstrap/providers.php` — незначительные изменения (возможные side-effects от тестов)
-- `routes/api.php` — аналогично
-- `app/Domains/User/*`, `docker-compose.yml`, `.github/workflows/ci.yml` — из предыдущей сессии (UserStatus, mailpit)
-
-**Удалён:** `tests/Unit/Shared/Console/BenchmarkTest.php` (временный профайлинг-файл).
-
-**Текущий статус:** изменения не закоммичены. Docker не запущен — тесты не прогнаны.
-
-`bootstrap/providers.php` и `routes/api.php` вручную очищены от мусора (StubGroup, BenchGen).
+**Незакоммиченные изменения (R-1..R-15):**
+- `AbstractGenerator` — `withOutput(Closure)`, `writeFile()` с `ensureDirectoryExists`, ES-хелперы
+- `TestValueHelper` — ветка `array` + синхронизация с fakerForField (address/city/country/url/title/description)
+- `FieldParser` — `timestamp/datetime` nullable=true + правило 'nullable'
+- `ControllerGenerator` — assert→RuntimeException, объединены createArgs/updateArgs
+- `ApiTestGenerator` — явный assertGreaterThan перед sort-assertions
+- `ModelGenerator`, `RepositoryGenerator` — ES через AbstractGenerator хелперы
+- `MigrationGenerator` — writeFile вместо put, nullable для колонок
+- `MakeDomainCommand` — удалён createDirectories, appendRoutes guard, FQCN в registerProvider, strrpos вместо str_replace, output closure для генераторов, комментарий runningUnderPhpUnit
+- Роадмап R-1..R-15 отмечены выполненными
 
 ## Аудит 2026-06-08 — итог
 
@@ -55,7 +52,7 @@
 
 ## Last updated
 
-2026-06-12 (полное ревью рефактора MakeDomainCommand: 15 находок → roadmap R-1..R-15)
+2026-06-12 (реализованы R-1..R-15: все 15 находок post-refactor ревью закрыты)
 
 ## Last commit
 

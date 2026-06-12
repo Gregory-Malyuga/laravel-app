@@ -20,6 +20,10 @@ class TestValueHelper
             return $alternate ? 'false' : 'true';
         }
 
+        if ($phpType === 'array') {
+            return '[]';
+        }
+
         if (str_ends_with($fieldName, 'email')) {
             return $alternate ? "'updated@example.com'" : "'test@example.com'";
         }
@@ -34,6 +38,30 @@ class TestValueHelper
 
         if (str_contains($fieldName, 'last_name')) {
             return $alternate ? "'Smith'" : "'Doe'";
+        }
+
+        if (str_contains($fieldName, 'address')) {
+            return $alternate ? "'456 Other Ave'" : "'123 Test Street'";
+        }
+
+        if (str_contains($fieldName, 'city')) {
+            return $alternate ? "'Other City'" : "'Test City'";
+        }
+
+        if (str_contains($fieldName, 'country')) {
+            return $alternate ? "'UK'" : "'US'";
+        }
+
+        if (str_contains($fieldName, 'description') || str_contains($fieldName, 'note') || str_contains($fieldName, 'comment')) {
+            return $alternate ? "'Updated description'" : "'Test description'";
+        }
+
+        if (str_contains($fieldName, 'title')) {
+            return $alternate ? "'Other Title'" : "'Test Title'";
+        }
+
+        if (str_contains($fieldName, 'url') || str_contains($fieldName, 'website') || str_contains($fieldName, 'link')) {
+            return $alternate ? "'http://other.example.com'" : "'http://test.example.com'";
         }
 
         $label = Str::headline($fieldName);

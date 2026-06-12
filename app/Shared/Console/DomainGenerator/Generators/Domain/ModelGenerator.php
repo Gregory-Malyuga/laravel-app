@@ -12,11 +12,20 @@ class ModelGenerator extends AbstractGenerator
     {
         $fillable = implode(', ', array_map(fn ($f) => "'{$f}'", array_keys($ctx->fields)));
 
-        $esImports = $ctx->withElasticsearch
-            ? "\nuse Shared\\Elasticsearch\\ElasticsearchSearchable;\nuse Shared\\Elasticsearch\\InteractsWithElasticsearch;"
-            : '';
-        $esInterface = $ctx->withElasticsearch ? ' implements ElasticsearchSearchable' : '';
-        $esTrait = $ctx->withElasticsearch ? "\n    use InteractsWithElasticsearch;\n" : '';
+        $castsMap = [];
+        foreach ($ctx->fields as $fieldName => $def) {
+            if ($def['migration'] === 'json') {
+                $castsMap[$fieldName] = 'array';
+            } elseif ($def['phpType'] === 'bool') {
+                $castsMap[$fieldName] = 'boolean';
+            }
+        }
+        $castsLines = implode(', ', array_map(fn ($f, $c) => "'{$f}' => '{$c}'", array_keys($castsMap), $castsMap));
+        $castsProperty = $castsMap !== [] ? "\n            /** @var array<string, string> */\n            protected \$casts = [{$castsLines}];\n" : '';
+
+        $esImports = $this->esImports($ctx);
+        $esInterface = $this->esInterface($ctx);
+        $esTrait = $this->esTrait($ctx);
 
         $content = <<<PHP
         <?php
@@ -36,7 +45,7 @@ class ModelGenerator extends AbstractGenerator
             protected \$table = '{$ctx->table}';
 
             /** @var list<string> */
-            protected \$fillable = [{$fillable}];
+            protected \$fillable = [{$fillable}];{$castsProperty}
 
             protected static function newFactory(): {$ctx->name}Factory
             {

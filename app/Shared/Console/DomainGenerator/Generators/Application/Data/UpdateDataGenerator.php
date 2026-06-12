@@ -15,12 +15,15 @@ class UpdateDataGenerator extends AbstractGenerator
         $rules = '';
 
         foreach ($ctx->fields as $fieldName => $def) {
+            $docPrefix = $def['phpType'] === 'array'
+                ? '        /** @var array<string, mixed>'.($def['nullable'] ? '|null' : '')." */\n"
+                : '';
             if ($def['nullable']) {
-                $optional .= "        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
+                $optional .= $docPrefix."        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
                 $ruleList = implode("', '", $def['rules']);
                 $rules .= "            '{$fieldName}' => ['sometimes', '{$ruleList}'],\n";
             } else {
-                $required .= "        public readonly {$def['phpType']} \${$fieldName},\n";
+                $required .= $docPrefix."        public readonly {$def['phpType']} \${$fieldName},\n";
                 $ruleList = implode("', '", $def['rules']);
                 $rules .= "            '{$fieldName}' => ['{$ruleList}'],\n";
             }

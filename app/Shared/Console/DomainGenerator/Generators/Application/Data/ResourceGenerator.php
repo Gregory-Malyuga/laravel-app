@@ -14,10 +14,13 @@ class ResourceGenerator extends AbstractGenerator
         $optional = '';
 
         foreach ($ctx->fields as $fieldName => $def) {
+            $docPrefix = $def['phpType'] === 'array'
+                ? '        /** @var array<string, mixed>'.($def['nullable'] ? '|null' : '')." */\n"
+                : '';
             if ($def['nullable']) {
-                $optional .= "        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
+                $optional .= $docPrefix."        public readonly ?{$def['phpType']} \${$fieldName} = null,\n";
             } else {
-                $required .= "        public readonly {$def['phpType']} \${$fieldName},\n";
+                $required .= $docPrefix."        public readonly {$def['phpType']} \${$fieldName},\n";
             }
         }
 

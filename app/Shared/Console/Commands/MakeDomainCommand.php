@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Shared\Console\DomainGenerator\Context\DomainContext;
-use Shared\Console\DomainGenerator\Contracts\GeneratorInterface;
+use Shared\Console\DomainGenerator\Contracts\AbstractGenerator;
 use Shared\Console\DomainGenerator\Generators\Application\Commands\CreateCommandGenerator;
 use Shared\Console\DomainGenerator\Generators\Application\Commands\CreateHandlerGenerator;
 use Shared\Console\DomainGenerator\Generators\Application\Commands\DeleteCommandGenerator;
@@ -21,6 +21,7 @@ use Shared\Console\DomainGenerator\Generators\Application\Queries\FindByIdHandle
 use Shared\Console\DomainGenerator\Generators\Application\Queries\FindByIdQueryGenerator;
 use Shared\Console\DomainGenerator\Generators\Application\Queries\ListHandlerGenerator;
 use Shared\Console\DomainGenerator\Generators\Application\Queries\ListQueryGenerator;
+use Shared\Console\DomainGenerator\Generators\Application\RepositoryInterfaceGenerator;
 use Shared\Console\DomainGenerator\Generators\Database\MigrationGenerator;
 use Shared\Console\DomainGenerator\Generators\Domain\EventGenerator;
 use Shared\Console\DomainGenerator\Generators\Domain\FactoryGenerator;
@@ -38,6 +39,7 @@ use Shared\Console\DomainGenerator\Generators\Tests\ApiTestGenerator;
 use Shared\Console\DomainGenerator\Generators\Tests\RepositoryTestGenerator;
 use Shared\Console\DomainGenerator\Support\FieldParser;
 use Shared\Console\DomainGenerator\Support\TestValueHelper;
+use Symfony\Component\Process\Process;
 
 class MakeDomainCommand extends Command
 {
@@ -57,8 +59,6 @@ class MakeDomainCommand extends Command
     public function handle(): int
     {
         $ctx = $this->buildContext();
-
-        $this->createDirectories($ctx);
 
         foreach ($this->generators() as $generator) {
             $generator->generate($ctx, $this->files);
@@ -85,7 +85,7 @@ class MakeDomainCommand extends Command
     private function buildContext(): DomainContext
     {
         $rawInput = str_replace('\\', '/', (string) $this->argument('name'));
-        $segments = array_values(array_filter(array_map('ucfirst', explode('/', $rawInput))));
+        $segments = array_values(array_filter(array_map(fn (string $s) => Str::studly($s), explode('/', $rawInput))));
         $name = (string) array_pop($segments);
         $parentParts = $segments;
 
@@ -118,12 +118,21 @@ class MakeDomainCommand extends Command
         );
     }
 
-    /** @return list<GeneratorInterface> */
+    /** @return list<AbstractGenerator> */
     private function generators(): array
     {
         $values = new TestValueHelper;
 
-        return [
+        $outputFn = function (string $action, string $path): void {
+            $rel = str_replace(base_path().DIRECTORY_SEPARATOR, '', $path);
+            if ($action === 'create') {
+                $this->line('<info>CREATE</info> '.$rel);
+            } else {
+                $this->warn('SKIP   '.$rel);
+            }
+        };
+
+        $gens = [
             new ModelGenerator,
             new FactoryGenerator,
             new EventGenerator,
@@ -142,6 +151,7 @@ class MakeDomainCommand extends Command
             new ListHandlerGenerator,
             new FindByIdQueryGenerator,
             new FindByIdHandlerGenerator,
+            new RepositoryInterfaceGenerator,
             new RepositoryGenerator,
             new CacheWarmerGenerator,
             new ControllerGenerator,
@@ -154,46 +164,26 @@ class MakeDomainCommand extends Command
             new RepositoryTestGenerator($values),
             new ApiTestGenerator($values),
         ];
-    }
 
-    private function createDirectories(DomainContext $ctx): void
-    {
-        $dirs = [
-            "{$ctx->basePath}/Application/Commands/Create",
-            "{$ctx->basePath}/Application/Commands/Update",
-            "{$ctx->basePath}/Application/Commands/Delete",
-            "{$ctx->basePath}/Application/Data",
-            "{$ctx->basePath}/Application/Queries/ListAll",
-            "{$ctx->basePath}/Application/Queries/FindById",
-            "{$ctx->basePath}/Domain/Database/Factories",
-            "{$ctx->basePath}/Domain/Events",
-            "{$ctx->basePath}/Domain/Exceptions",
-            "{$ctx->basePath}/Domain/Models",
-            "{$ctx->basePath}/Infrastructure/Repositories",
-            "{$ctx->basePath}/Presentation/Http/Controllers",
-            "{$ctx->basePath}/Presentation/Http/OpenApi",
-            "{$ctx->basePath}/Presentation/Http/Requests",
-            "{$ctx->basePath}/Providers",
-            $ctx->unitTestPath,
-            $ctx->featureTestPath,
-        ];
-
-        if ($ctx->withCacheWarmer) {
-            $dirs[] = "{$ctx->basePath}/Infrastructure/Cache";
-        }
-
-        foreach ($dirs as $dir) {
-            $this->files->ensureDirectoryExists($dir);
-        }
+        return array_map(fn (AbstractGenerator $g): AbstractGenerator => $g->withOutput($outputFn), $gens);
     }
 
     private function appendRoutes(DomainContext $ctx): void
     {
         $file = base_path('routes/api.php');
+
+        if (! $this->files->exists($file)) {
+            $this->warn('routes/api.php not found — skipping route registration');
+
+            return;
+        }
+
         $content = $this->files->get($file);
         $controllerFqcn = "{$ctx->ns}\\Presentation\\Http\\Controllers\\{$ctx->name}Controller";
 
         if (str_contains($content, $controllerFqcn)) {
+            $this->warn('SKIP   routes already registered: '.$ctx->plural);
+
             return;
         }
 
@@ -202,7 +192,7 @@ class MakeDomainCommand extends Command
         $block = <<<PHP
 
 
-        Route::prefix('v1/{$ctx->plural}')->group(function (): void {
+        Route::prefix('v1/{$ctx->plural}')->middleware(['auth:sanctum'])->group(function (): void {
             Route::get('/', [\\{$controllerFqcn}::class, 'index'])->name('api.v1.{$routeName}.index');
             Route::post('/', [\\{$controllerFqcn}::class, 'store'])->name('api.v1.{$routeName}.store');
             Route::get('/{id}', [\\{$controllerFqcn}::class, 'show'])->name('api.v1.{$routeName}.show');
@@ -212,29 +202,32 @@ class MakeDomainCommand extends Command
         PHP;
 
         $this->files->append($file, $block);
+        $this->line('<info>ROUTE </info> Added routes for '.$ctx->plural);
     }
 
     private function registerProvider(DomainContext $ctx): void
     {
         $providerClass = "{$ctx->ns}\\Providers\\{$ctx->name}ServiceProvider";
-        $shortName = "{$ctx->name}ServiceProvider";
         $file = base_path('bootstrap/providers.php');
         $content = $this->files->get($file);
 
-        $pattern = '/return\s*\[\s*(.*?)\s*]\s*;/s';
-        if (preg_match($pattern, $content, $matches)) {
-            if (str_contains($matches[1], $shortName.'::class')) {
-                return;
-            }
+        if (str_contains($content, $providerClass.'::class')) {
+            $this->warn('SKIP   provider already registered: '.$providerClass);
+
+            return;
         }
 
-        $content = str_replace(
-            '];',
-            "    {$providerClass}::class,\n];",
-            $content
-        );
+        $pos = strrpos($content, '];');
+        if ($pos === false) {
+            $this->warn('Could not locate closing ]; in bootstrap/providers.php — skipping provider registration');
+
+            return;
+        }
+
+        $content = substr($content, 0, $pos)."    {$providerClass}::class,\n];".substr($content, $pos + 2);
 
         $this->files->put($file, $content);
+        $this->line('<info>PROVIDER</info> Registered '.$providerClass);
     }
 
     private function runningUnderPhpUnit(): bool
@@ -255,7 +248,7 @@ class MakeDomainCommand extends Command
             return;
         }
 
-        $migGlob = database_path('migrations/*_create_'.strtolower(str_replace([' ', '-'], '_', (string) preg_replace('/(?<=\w)([A-Z])/', '_$1', $ctx->name))).'*_table.php');
+        $migGlob = database_path("migrations/*_create_{$ctx->table}_table.php");
 
         $domainExists = $this->files->isDirectory($ctx->basePath) ? [$ctx->basePath] : [];
         $migFiles = $this->files->glob($migGlob);
@@ -266,7 +259,6 @@ class MakeDomainCommand extends Command
         }
 
         /** @var list<string> $all */
-        $cmd = $pint.' '.implode(' ', array_map(fn (string $f): string => escapeshellarg($f), $all)).' 2>/dev/null';
-        exec($cmd);
+        (new Process([$pint, ...$all]))->run();
     }
 }

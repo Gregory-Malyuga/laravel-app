@@ -60,7 +60,7 @@ class FieldParser
             'email' => ['phpType' => 'string', 'nullable' => false, 'migration' => 'string', 'decimal' => false, 'faker' => $faker, 'rules' => ['string', 'email', 'max:255']],
             'phone' => ['phpType' => 'string', 'nullable' => false, 'migration' => 'string', 'decimal' => false, 'faker' => $faker, 'rules' => ['string', 'max:30']],
             'date' => ['phpType' => 'string', 'nullable' => false, 'migration' => 'date', 'decimal' => false, 'faker' => $faker, 'rules' => ['date']],
-            'timestamp', 'datetime' => ['phpType' => 'string', 'nullable' => false, 'migration' => 'timestamp', 'decimal' => false, 'faker' => $faker, 'rules' => ['date']],
+            'timestamp', 'datetime' => ['phpType' => 'string', 'nullable' => true, 'migration' => 'timestamp', 'decimal' => false, 'faker' => $faker, 'rules' => ['nullable', 'date']],
             'json', 'array' => ['phpType' => 'array', 'nullable' => true, 'migration' => 'json', 'decimal' => false, 'faker' => $faker, 'rules' => ['nullable', 'array']],
             default => ['phpType' => 'string', 'nullable' => false, 'migration' => 'string', 'decimal' => false, 'faker' => $faker, 'rules' => ['string', 'max:255']],
         };
