@@ -73,7 +73,7 @@ class MakeDomainCommand extends Command
 
         $this->formatGenerated($ctx);
 
-        if (class_exists('Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider')) {
+        if (! $this->runningUnderPhpUnit() && class_exists('Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider')) {
             $this->call('ide-helper:models', ['--nowrite' => true]);
         }
 

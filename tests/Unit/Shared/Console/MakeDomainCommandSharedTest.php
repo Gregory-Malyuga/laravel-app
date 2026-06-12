@@ -21,7 +21,7 @@ class MakeDomainCommandSharedTest extends StubGenTestCase
             self::$originalProviders = $this->files->get(base_path('bootstrap/providers.php'));
             self::$originalApiRoutes = $this->files->get(base_path('routes/api.php'));
             static::deleteDomainArtifacts($this->files);
-            $this->artisan('make:domain StubGen')->assertSuccessful();
+            $this->artisan('make:domain '.static::$domainName)->assertSuccessful();
             self::$domainReady = true;
         }
     }

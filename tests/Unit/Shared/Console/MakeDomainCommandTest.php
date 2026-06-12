@@ -4,9 +4,12 @@ namespace Tests\Unit\Shared\Console;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class MakeDomainCommandTest extends StubGenTestCase
 {
+    protected static string $domainName = 'StubIso';
+
     private string $originalProviders;
 
     private string $originalApiRoutes;
@@ -38,8 +41,9 @@ class MakeDomainCommandTest extends StubGenTestCase
         static::deleteDomainArtifacts($this->files);
 
         if ($this->migrationRan) {
-            Schema::dropIfExists('stub_gens');
-            DB::table('migrations')->where('migration', 'like', '%create_stub_gens_table')->delete();
+            $table = Str::snake(Str::plural(static::$domainName));
+            Schema::dropIfExists($table);
+            DB::table('migrations')->where('migration', 'like', "%create_{$table}_table")->delete();
             $this->migrationRan = false;
         }
     }
@@ -49,23 +53,23 @@ class MakeDomainCommandTest extends StubGenTestCase
 
     public function test_capitalises_first_letter_of_domain_name(): void
     {
-        $this->artisan('make:domain stubGen')->assertSuccessful();
+        $this->artisan('make:domain stubIso')->assertSuccessful();
 
-        $this->assertFileExists("{$this->domainBase}/Infrastructure/Repositories/StubGenRepository.php");
+        $this->assertFileExists("{$this->domainBase}/Infrastructure/Repositories/StubIsoRepository.php");
     }
 
     public function test_creates_cache_warmer_with_flag(): void
     {
-        $this->artisan('make:domain StubGen --with-cache-warmer')->assertSuccessful();
+        $this->artisan('make:domain StubIso --with-cache-warmer')->assertSuccessful();
 
-        $this->assertFileExists("{$this->domainBase}/Infrastructure/Cache/StubGenCacheWarmer.php");
+        $this->assertFileExists("{$this->domainBase}/Infrastructure/Cache/StubIsoCacheWarmer.php");
     }
 
     public function test_repository_includes_elasticsearch_with_flag(): void
     {
-        $this->artisan('make:domain StubGen --with-elasticsearch')->assertSuccessful();
+        $this->artisan('make:domain StubIso --with-elasticsearch')->assertSuccessful();
 
-        $content = $this->files->get("{$this->domainBase}/Infrastructure/Repositories/StubGenRepository.php");
+        $content = $this->files->get("{$this->domainBase}/Infrastructure/Repositories/StubIsoRepository.php");
 
         $this->assertStringContainsString('ElasticsearchSearchable', $content);
         $this->assertStringContainsString('InteractsWithElasticsearch', $content);
@@ -73,53 +77,57 @@ class MakeDomainCommandTest extends StubGenTestCase
 
     public function test_skips_existing_files_on_second_run(): void
     {
-        $this->artisan('make:domain StubGen')->assertSuccessful();
+        $this->artisan('make:domain StubIso')->assertSuccessful();
 
-        $path = "{$this->domainBase}/Infrastructure/Repositories/StubGenRepository.php";
+        $path = "{$this->domainBase}/Infrastructure/Repositories/StubIsoRepository.php";
         $this->files->put($path, '<?php // sentinel');
 
-        $this->artisan('make:domain StubGen')->assertSuccessful();
+        $this->artisan('make:domain StubIso')->assertSuccessful();
 
         $this->assertStringContainsString('sentinel', $this->files->get($path));
     }
 
     public function test_creates_and_runs_migration(): void
     {
-        $this->artisan('make:domain StubGen')->assertSuccessful();
+        $this->artisan('make:domain StubIso')->assertSuccessful();
 
-        $migrations = $this->files->glob(database_path('migrations/*_create_stub_gens_table.php'));
+        $table = Str::snake(Str::plural(static::$domainName));
+        $migrations = $this->files->glob(database_path("migrations/*_create_{$table}_table.php"));
         $this->assertNotEmpty($migrations, 'Migration file should be created');
 
         $this->artisan('migrate')->assertSuccessful();
         $this->migrationRan = true;
-        $this->assertTrue(Schema::hasTable('stub_gens'), 'Table should exist after migrate');
+        $this->assertTrue(Schema::hasTable($table), 'Table should exist after migrate');
     }
 
     public function test_skips_migration_if_already_exists(): void
     {
-        $this->artisan('make:domain StubGen')->assertSuccessful();
-        $before = $this->files->glob(database_path('migrations/*_create_stub_gens_table.php'));
+        $this->artisan('make:domain StubIso')->assertSuccessful();
 
-        $this->artisan('make:domain StubGen')->assertSuccessful();
-        $after = $this->files->glob(database_path('migrations/*_create_stub_gens_table.php'));
+        $table = Str::snake(Str::plural(static::$domainName));
+        $before = $this->files->glob(database_path("migrations/*_create_{$table}_table.php"));
+
+        $this->artisan('make:domain StubIso')->assertSuccessful();
+        $after = $this->files->glob(database_path("migrations/*_create_{$table}_table.php"));
 
         $this->assertCount(count($before), $after, 'No extra migration should be created on second run');
     }
 
     public function test_fields_appear_in_model_fillable(): void
     {
-        $this->artisan('make:domain StubGen title:string count:integer')->assertSuccessful();
+        $this->artisan('make:domain StubIso title:string count:integer')->assertSuccessful();
 
-        $content = $this->files->get("{$this->domainBase}/Domain/Models/StubGen.php");
+        $content = $this->files->get("{$this->domainBase}/Domain/Models/StubIso.php");
         $this->assertStringContainsString("'title'", $content);
         $this->assertStringContainsString("'count'", $content);
     }
 
     public function test_fields_appear_in_migration(): void
     {
-        $this->artisan('make:domain StubGen title:string count:integer')->assertSuccessful();
+        $this->artisan('make:domain StubIso title:string count:integer')->assertSuccessful();
 
-        $migrations = $this->files->glob(database_path('migrations/*_create_stub_gens_table.php'));
+        $table = Str::snake(Str::plural(static::$domainName));
+        $migrations = $this->files->glob(database_path("migrations/*_create_{$table}_table.php"));
         $content = $this->files->get($migrations[0]);
         $this->assertStringContainsString("'title'", $content);
         $this->assertStringContainsString("'count'", $content);
@@ -127,12 +135,12 @@ class MakeDomainCommandTest extends StubGenTestCase
 
     public function test_provider_registration_is_idempotent(): void
     {
-        $this->artisan('make:domain StubGen')->assertSuccessful();
-        $this->artisan('make:domain StubGen')->assertSuccessful();
+        $this->artisan('make:domain StubIso')->assertSuccessful();
+        $this->artisan('make:domain StubIso')->assertSuccessful();
 
         $content = $this->files->get(base_path('bootstrap/providers.php'));
 
-        $this->assertSame(1, substr_count($content, 'StubGenServiceProvider::class'));
+        $this->assertSame(1, substr_count($content, 'StubIsoServiceProvider::class'));
     }
 
     public function test_nested_domain_uses_parent_namespace(): void

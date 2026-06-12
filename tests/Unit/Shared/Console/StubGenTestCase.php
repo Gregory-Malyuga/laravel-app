@@ -3,10 +3,13 @@
 namespace Tests\Unit\Shared\Console;
 
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 abstract class StubGenTestCase extends TestCase
 {
+    protected static string $domainName = 'StubGen';
+
     protected Filesystem $files;
 
     protected string $domainBase;
@@ -20,16 +23,19 @@ abstract class StubGenTestCase extends TestCase
         parent::setUp();
 
         $this->files = new Filesystem;
-        $this->domainBase = base_path('app/Domains/StubGen');
+        $name = static::$domainName;
+        $this->domainBase = base_path("app/Domains/{$name}");
         $this->unitTestBase = "{$this->domainBase}/Tests/Unit";
         $this->featureTestBase = "{$this->domainBase}/Tests/Feature";
     }
 
     protected static function deleteDomainArtifacts(Filesystem $files): void
     {
-        $files->deleteDirectory(base_path('app/Domains/StubGen'));
+        $name = static::$domainName;
+        $files->deleteDirectory(base_path("app/Domains/{$name}"));
 
-        foreach ($files->glob(database_path('migrations/*_create_stub_gens_table.php')) as $f) {
+        $table = Str::snake(Str::plural($name));
+        foreach ($files->glob(database_path("migrations/*_create_{$table}_table.php")) as $f) {
             $files->delete($f);
         }
     }
