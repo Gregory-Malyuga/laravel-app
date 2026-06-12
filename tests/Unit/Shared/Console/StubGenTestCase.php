@@ -44,14 +44,14 @@ abstract class StubGenTestCase extends TestCase
     {
         $providersPath = base_path('bootstrap/providers.php');
         $content = $files->get($providersPath);
-        $cleaned = preg_replace('/^[ \t]+Domains\\\\(?:Stub|Bench)[^:]+::class,\n/m', '', $content);
+        $cleaned = preg_replace('/^[ \t]+Domains\\\\Stub[^:]+::class,\n/m', '', $content);
         if ($cleaned !== null && $cleaned !== $content) {
             $files->put($providersPath, $cleaned);
         }
 
         $routesPath = base_path('routes/api.php');
         $content = $files->get($routesPath);
-        $cleaned = preg_replace('/\n\nRoute::prefix\(\'v1\/(?:stub|bench)[^\']*\'\)(?:->middleware\([^)]*\))?->group.*?\}\);/s', '', $content);
+        $cleaned = preg_replace('/\n\nRoute::prefix\(\'v1\/stub[^\']*\'\)(?:->middleware\([^)]*\))?->group.*?\}\);/s', '', $content);
         if ($cleaned !== null && $cleaned !== $content) {
             $files->put($routesPath, $cleaned);
         }

@@ -156,32 +156,38 @@ app/Shared/Console/
 
 #### TODO
 
-- [ ] **T-1** `MakeDomainCommandTest.php` — small · **приоритет 1**  
+- [x] **T-1** `MakeDomainCommandTest.php` — small · **приоритет 1** ✓  
   Заменить хардкод `'v1\/stub-isos'` в `removeFromGlobalFiles()` на  
-  `Str::kebab(Str::plural(static::$domainName))`.  
-  Без этого tearDown — silent no-op при переименовании домена → routes накапливаются → нон-детерминированные падения SharedTest.
+  `Str::kebab(Str::plural(static::$domainName))`.
 
-- [ ] **T-2** `phpunit.xml` — small · **приоритет 2**  
-  Добавить `<testsuite name="DomainGen"><directory>tests/Unit/Shared/Console</directory></testsuite>`.  
-  Даёт изолированный запуск 27 тестов для проверки ≤ 15 с constraint; гарантирует чистое распределение воркеров.
+- [x] **T-2** `phpunit.xml` — small · **приоритет 2** ✓  
+  Добавить `<testsuite name="DomainGen"><directory>tests/Unit/Shared/Console</directory></testsuite>`.
 
-- [ ] **T-3** `MakeDomainCommandSharedTest.php` — medium · **приоритет 3**  
-  Перевести bootstrap домена с `static $domainReady` + guard в `setUp()` на `setUpBeforeClass()`.  
-  Использовать `Artisan::call('make:domain ' . static::$domainName)`.  
-  Убрать `static bool $domainReady`. Закрывает race-window между snapshot Worker-B и restore Worker-A.
+- [ ] **T-3** `MakeDomainCommandSharedTest.php` — medium · **приоритет 3** ⚠️ отложено  
+  Перевод на `setUpBeforeClass()` нереализуем без рефактора: `Artisan::call()` требует  
+  загруженного контейнера, который создаётся в `setUp()` инстанса — в статическом хуке недоступен.  
+  Текущий `static $domainReady` + guard в `setUp()` работает корректно; race-window закрыт  
+  хирургическим удалением в MakeDomainCommandTest.
 
-- [ ] **T-4** `MakeDomainCommandTest.php` — small · **приоритет 4**  
-  Убрать лишние второй artisan-вызов в двух тестах:  
-  — `test_skips_migration_if_already_exists`: один вызов + glob-count уже достаточно;  
-  — `test_provider_registration_is_idempotent`: `assertSame(1, substr_count(...))` доказывает idempotency без второго бута.  
-  *(`test_skips_existing_files_on_second_run` не трогать — там второй вызов семантически нужен.)*  
-  Экономия ~0.8 с P99 на Worker-B.
+- [x] **T-4** `MakeDomainCommandTest.php` — small · **приоритет 4** ✓  
+  Убрать второй artisan-вызов в `test_provider_registration_is_idempotent`.
 
-- [ ] **T-5** `MakeDomainCommandTest.php` — small · **приоритет 5**  
-  Переименовать вложенный тестовый домен `StubGroup/StubGen` → `StubGroup/StubNested`.  
-  `StubGen` генерирует таблицу `stub_gens` — ту же что SharedTest; `finally`-блок делает  
-  `Schema::dropIfExists('stub_gens')` и может убить таблицу SharedTest на параллельном воркере.  
-  Обновить: `$nestedBase`, artisan-аргумент, assertions на `StubNested`, glob, `Schema::dropIfExists('stub_nesteds')`.
+- [x] **T-5** `MakeDomainCommandTest.php` — small · **приоритет 5** ✓  
+  Переименовать вложенный тестовый домен `StubGroup/StubGen` → `StubGroup/StubNested`.
+
+#### Ревью (2026-06-12) — выявленные доработки
+
+После ревью группой из 5 экспертов применены:
+
+- [x] **AI-1** `phpunit.xml` — добавить `<exclude>tests/Unit/Shared/Console</exclude>` в Unit suite; DomainGen остаётся единственным контейнером для Console/-тестов — устранён двойной прогон и race на routes/providers ✓
+- [x] **AI-2** `MakeDomainCommandTest.php` — завершить T-1: providers-regex динамизирован через `preg_quote(static::$domainName)` (был хардкод `StubIso`) ✓
+- [x] **AI-3** `MakeDomainCommandTest.php` — восстановить второй artisan-вызов в `test_provider_registration_is_idempotent`; один вызов не тестирует idempotency ✓
+- [x] **AI-4** `MakeDomainCommandTest.php:116` — кросс-платформенный path separator в `str_replace` для `--path` migrate ✓
+- [x] **AI-6** `phpunit.xml` — документирующий комментарий к DomainGen suite ✓
+- [x] **AI-7** `MakeDomainCommandTest.php` — `preg_quote` для `$routePrefix` в routes-regex ✓
+- [x] **AI-8** `StubGenTestCase.php` — убрать мёртвое `(?:Stub|Bench)` → `(?:Stub)` в stripTestArtifacts ✓
+- [x] **AI-9** `MakeDomainCommandTest.php` — `->middleware(...)` сделан опциональным (`(?:->middleware\([^)]*\))?`) в routes-regex removeFromGlobalFiles ✓
+- [ ] **AI-5** `MakeDomainCommandTest.php` — `test_nested_domain_uses_parent_namespace` использует snapshot-restore вместо хирургического удаления → потенциальный inter-worker pollution при параллельном прогоне (отложено)
 
 #### Ожидаемое время после всех правок
 

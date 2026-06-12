@@ -47,8 +47,9 @@ class MakeDomainCommandTest extends StubGenTestCase
     {
         $routesPath = base_path('routes/api.php');
         $content = $this->files->get($routesPath);
+        $routePrefix = preg_quote('v1/'.Str::kebab(Str::plural(static::$domainName)), '/');
         $cleaned = preg_replace(
-            '/\n\nRoute::prefix\(\'v1\/stub-isos\'\)->middleware\([^)]*\)->group.*?\}\);/s',
+            '/\n\nRoute::prefix\(\''.$routePrefix.'\'\)(?:->middleware\([^)]*\))?->group.*?\}\);/s',
             '',
             $content,
         );
@@ -58,7 +59,7 @@ class MakeDomainCommandTest extends StubGenTestCase
 
         $providersPath = base_path('bootstrap/providers.php');
         $content = $this->files->get($providersPath);
-        $cleaned = preg_replace('/^[ \t]+Domains\\\\StubIso\\\\[^:]+::class,\n/m', '', $content);
+        $cleaned = preg_replace('/^[ \t]+Domains\\\\'.preg_quote(static::$domainName, '/').'\\\\[^:]+::class,\n/m', '', $content);
         if ($cleaned !== null && $cleaned !== $content) {
             $this->files->put($providersPath, $cleaned);
         }
@@ -112,7 +113,7 @@ class MakeDomainCommandTest extends StubGenTestCase
         $this->assertNotEmpty($migrations, 'Migration file should be created');
 
         // Scope to this specific file so a concurrent worker's pending migrations are not picked up.
-        $relPath = str_replace(base_path().'/', '', $migrations[0]);
+        $relPath = ltrim(str_replace([base_path().'/', base_path().'\\'], '', $migrations[0]), '/\\');
         $this->artisan('migrate', ['--path' => $relPath])->assertSuccessful();
         $this->migrationRan = true;
         $this->assertTrue(Schema::hasTable($table), 'Table should exist after migrate');
@@ -163,7 +164,7 @@ class MakeDomainCommandTest extends StubGenTestCase
 
     public function test_nested_domain_uses_parent_namespace(): void
     {
-        $nestedBase = base_path('app/Domains/StubGroup/StubGen');
+        $nestedBase = base_path('app/Domains/StubGroup/StubNested');
         $files = $this->files;
 
         // Snapshot both files immediately before generation so the finally block restores
@@ -172,23 +173,23 @@ class MakeDomainCommandTest extends StubGenTestCase
         $providersBefore = $files->get(base_path('bootstrap/providers.php'));
 
         try {
-            $this->artisan('make:domain StubGroup/StubGen')->assertSuccessful();
+            $this->artisan('make:domain StubGroup/StubNested')->assertSuccessful();
 
-            $content = $files->get("{$nestedBase}/Infrastructure/Repositories/StubGenRepository.php");
-            $this->assertStringContainsString('namespace Domains\StubGroup\StubGen\Infrastructure\Repositories;', $content);
+            $content = $files->get("{$nestedBase}/Infrastructure/Repositories/StubNestedRepository.php");
+            $this->assertStringContainsString('namespace Domains\StubGroup\StubNested\Infrastructure\Repositories;', $content);
 
-            $content = $files->get("{$nestedBase}/Domain/Models/StubGen.php");
-            $this->assertStringContainsString('namespace Domains\StubGroup\StubGen\Domain\Models;', $content);
+            $content = $files->get("{$nestedBase}/Domain/Models/StubNested.php");
+            $this->assertStringContainsString('namespace Domains\StubGroup\StubNested\Domain\Models;', $content);
 
             $apiRoutes = $files->get(base_path('routes/api.php'));
-            $this->assertStringContainsString('Domains\StubGroup\StubGen\Presentation\Http\Controllers\StubGenController', $apiRoutes);
-            $this->assertStringContainsString("prefix('v1/stub-group/stub-gens')", $apiRoutes);
+            $this->assertStringContainsString('Domains\StubGroup\StubNested\Presentation\Http\Controllers\StubNestedController', $apiRoutes);
+            $this->assertStringContainsString("prefix('v1/stub-group/stub-nesteds')", $apiRoutes);
         } finally {
             $files->deleteDirectory(base_path('app/Domains/StubGroup'));
-            foreach ($files->glob(database_path('migrations/*_create_stub_gens_table.php')) as $f) {
+            foreach ($files->glob(database_path('migrations/*_create_stub_nesteds_table.php')) as $f) {
                 $files->delete($f);
             }
-            Schema::dropIfExists('stub_gens');
+            Schema::dropIfExists('stub_nesteds');
             $files->put(base_path('routes/api.php'), $routesBefore);
             $files->put(base_path('bootstrap/providers.php'), $providersBefore);
         }
