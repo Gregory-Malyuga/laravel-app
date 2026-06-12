@@ -10,18 +10,12 @@ class MakeDomainCommandTest extends StubGenTestCase
 {
     protected static string $domainName = 'StubIso';
 
-    private string $originalProviders;
-
-    private string $originalApiRoutes;
-
     private bool $migrationRan = false;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->originalProviders = $this->files->get(base_path('bootstrap/providers.php'));
-        $this->originalApiRoutes = $this->files->get(base_path('routes/api.php'));
         $this->cleanupArtifacts();
     }
 
@@ -29,8 +23,9 @@ class MakeDomainCommandTest extends StubGenTestCase
     {
         if (isset($this->files)) {
             $this->cleanupArtifacts();
-            $this->files->put(base_path('bootstrap/providers.php'), $this->originalProviders);
-            $this->files->put(base_path('routes/api.php'), $this->originalApiRoutes);
+            // Surgically remove only StubIso entries instead of restoring a full snapshot.
+            // A full restore would overwrite StubGen entries written by a concurrent worker.
+            $this->removeFromGlobalFiles();
         }
 
         parent::tearDown();
@@ -45,6 +40,27 @@ class MakeDomainCommandTest extends StubGenTestCase
             Schema::dropIfExists($table);
             DB::table('migrations')->where('migration', 'like', "%create_{$table}_table")->delete();
             $this->migrationRan = false;
+        }
+    }
+
+    private function removeFromGlobalFiles(): void
+    {
+        $routesPath = base_path('routes/api.php');
+        $content = $this->files->get($routesPath);
+        $cleaned = preg_replace(
+            '/\n\nRoute::prefix\(\'v1\/stub-isos\'\)->middleware\([^)]*\)->group.*?\}\);/s',
+            '',
+            $content,
+        );
+        if ($cleaned !== null && $cleaned !== $content) {
+            $this->files->put($routesPath, $cleaned);
+        }
+
+        $providersPath = base_path('bootstrap/providers.php');
+        $content = $this->files->get($providersPath);
+        $cleaned = preg_replace('/^[ \t]+Domains\\\\StubIso\\\\[^:]+::class,\n/m', '', $content);
+        if ($cleaned !== null && $cleaned !== $content) {
+            $this->files->put($providersPath, $cleaned);
         }
     }
 
@@ -95,7 +111,9 @@ class MakeDomainCommandTest extends StubGenTestCase
         $migrations = $this->files->glob(database_path("migrations/*_create_{$table}_table.php"));
         $this->assertNotEmpty($migrations, 'Migration file should be created');
 
-        $this->artisan('migrate')->assertSuccessful();
+        // Scope to this specific file so a concurrent worker's pending migrations are not picked up.
+        $relPath = str_replace(base_path().'/', '', $migrations[0]);
+        $this->artisan('migrate', ['--path' => $relPath])->assertSuccessful();
         $this->migrationRan = true;
         $this->assertTrue(Schema::hasTable($table), 'Table should exist after migrate');
     }
